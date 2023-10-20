@@ -1,4 +1,4 @@
-i# uamutations
+# uamutations
 
 Code for the [Urban Analyst](https://urbananalyst.city) algorithm that mutates
 cities to become more like other cities. This repo enables the code to be run,
