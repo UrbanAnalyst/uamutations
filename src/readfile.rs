@@ -27,3 +27,23 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> Vec<f64> {
 
     values
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_readfile() {
+        let filename = "dat1.json";
+        let varname = "transport";
+        let nentries = 10;
+
+        let result = readfile(filename, varname, nentries);
+
+        assert_eq!(result.len(), nentries);
+
+        for value in &result {
+            assert!(*value >= 0.0, "Found value less than 0");
+        }
+    }
+}
