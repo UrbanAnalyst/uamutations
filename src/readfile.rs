@@ -27,6 +27,7 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> Vec<f64> {
         }
     }
 
+    values.sort_by(|a, b| a.partial_cmp(b).unwrap());
     values
 }
 
