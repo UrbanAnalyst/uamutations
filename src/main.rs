@@ -13,3 +13,18 @@ fn main() {
         println!("Index: {}: ( {}, {} )", index1 + 1, number1, number2);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use itertools::Itertools;
+
+    #[test]
+    fn test_values_sorted() {
+        let values1 = readfile::readfile(FNAME1, VARNAME, NENTRIES);
+        let values2 = readfile::readfile(FNAME2, VARNAME, NENTRIES);
+
+        assert!(values1.iter().tuple_windows().all(|(a, b)| a <= b), "values1 is not sorted");
+        assert!(values2.iter().tuple_windows().all(|(a, b)| a <= b), "values2 is not sorted");
+    }
+}
