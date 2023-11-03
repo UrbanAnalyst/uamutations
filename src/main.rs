@@ -13,8 +13,8 @@ fn main() {
     let differences: Vec<_> = values1.iter().zip(values2.iter()).map(|(&x, &y)| x - y).collect();
     assert_eq!(values1.len(), differences.len(), "The lengths of values1 and differences are not equal");
     
-    for ((index1, number1), (_, number2)) in values1.iter().enumerate().zip(values2.iter().enumerate()) {
-        println!("Index: {}: ( {}, {} )", index1 + 1, number1, number2);
+    for (((index1, number1), number2), diff) in values1.iter().enumerate().zip(values2.iter()).zip(differences.iter()) {
+        println!("Index: {}: ( {}, {}, {} )", index1 + 1, number1, number2, diff);
     }
 }
 
