@@ -8,7 +8,11 @@ const VARNAME: &str = "transport";
 fn main() {
     let values1 = readfile::readfile(FNAME1, VARNAME, NENTRIES);
     let values2 = readfile::readfile(FNAME2, VARNAME, NENTRIES);
-
+    assert_eq!(values1.len(), values2.len(), "The lengths of values1 and values2 are not equal");
+    
+    let differences: Vec<_> = values1.iter().zip(values2.iter()).map(|(&x, &y)| x - y).collect();
+    assert_eq!(values1.len(), differences.len(), "The lengths of values1 and differences are not equal");
+    
     for ((index1, number1), (_, number2)) in values1.iter().enumerate().zip(values2.iter().enumerate()) {
         println!("Index: {}: ( {}, {} )", index1 + 1, number1, number2);
     }
@@ -24,6 +28,7 @@ mod tests {
         let values1 = readfile::readfile(FNAME1, VARNAME, NENTRIES);
         let values2 = readfile::readfile(FNAME2, VARNAME, NENTRIES);
 
+        assert_eq!(values1.len(), values2.len(), "The lengths of values1 and values2 are not equal");
         assert!(values1.iter().tuple_windows().all(|(a, b)| a <= b), "values1 is not sorted");
         assert!(values2.iter().tuple_windows().all(|(a, b)| a <= b), "values2 is not sorted");
     }
