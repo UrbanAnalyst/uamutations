@@ -30,7 +30,7 @@ fn main() {
         }
     }
 
-    for number in &values {
-        println!("{}", number);
+    for (index, number) in values.iter().enumerate() {
+        println!("{}: {}", index + 1, number);
     }
 }
