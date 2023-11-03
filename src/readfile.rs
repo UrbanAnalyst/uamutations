@@ -1,24 +1,26 @@
 use std::fs::File;
 use std::io::BufReader;
-use geojson::GeoJson;
+use serde_json::Value;
 
 pub fn readfile(filename: &str, varname: &str, nentries: usize) -> Vec<f64> {
     let file = File::open(filename).unwrap();
     let reader = BufReader::new(file);
 
-    let geojson = GeoJson::from_reader(reader).unwrap();
+    let json: Value = serde_json::from_reader(reader).unwrap();
 
     let mut values = Vec::new();
 
-    if let GeoJson::FeatureCollection(collection) = geojson {
-        for feature in collection.features {
+    if let Value::Array(array) = &json {
+        for item in array {
             if values.len() >= nentries {
                 break;
             }
-            if let Some(properties) = feature.properties {
-                if let Some(value) = properties.get(varname) {
-                    if let Some(number) = value.as_f64() {
-                        values.push(number);
+            if let Value::Object(map) = item {
+                if let Some(value) = map.get(varname) {
+                    if let Value::Number(number) = value {
+                        if let Some(number) = number.as_f64() {
+                            values.push(number);
+                        }
                     }
                 }
             }
