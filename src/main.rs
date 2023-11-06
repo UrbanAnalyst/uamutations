@@ -9,8 +9,8 @@ const FNAME2: &str = "dat2.json";
 const VARNAME: &str = "bike_index";
 
 fn main() {
-    let values1 = readfile::readfile(FNAME1, VARNAME, NENTRIES);
-    let values2 = readfile::readfile(FNAME2, VARNAME, NENTRIES);
+    let (_indices1, values1) = readfile::readfile(FNAME1, VARNAME, NENTRIES);
+    let (_indices2, values2) = readfile::readfile(FNAME2, VARNAME, NENTRIES);
     assert_eq!(values1.len(), values2.len(), "The lengths of values1 and values2 are not equal");
     
     let diffs_abs: Vec<_> = values1.iter().zip(values2.iter()).map(|(&x, &y)| y - x).collect();

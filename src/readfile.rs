@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::BufReader;
 use serde_json::Value;
 
-pub fn readfile(filename: &str, varname: &str, nentries: usize) -> Vec<f64> {
+pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, Vec<f64>) {
     let file = File::open(filename).unwrap();
     let reader = BufReader::new(file);
 
@@ -27,8 +27,13 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> Vec<f64> {
         }
     }
 
-    values.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    values
+    let mut values: Vec<_> = values.into_iter().enumerate().collect();
+    values.sort_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap());
+
+    let indices: Vec<usize> = values.iter().map(|&(index, _)| index).collect();
+    let values: Vec<_> = values.iter().map(|&(_, value)| value).collect();
+
+    (indices, values)
 }
 
 #[cfg(test)]
