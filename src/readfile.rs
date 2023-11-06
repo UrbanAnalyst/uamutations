@@ -27,10 +27,11 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
         }
     }
 
-    let mut pairs: Vec<_> = values.clone().into_iter().enumerate().collect();
-    pairs.sort_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap());
+    let mut values: Vec<_> = values.into_iter().enumerate().collect();
+    values.sort_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap());
 
-    let index: Vec<usize> = pairs.iter().map(|&(index, _)| index).collect();
+    let index: Vec<usize> = values.iter().map(|&(index, _)| index).collect();
+    let values: Vec<f64> = values.iter().map(|&(_, value)| value).collect();
 
     (index, values)
 }
