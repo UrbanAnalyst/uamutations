@@ -1,3 +1,6 @@
+use std::fs::File;
+use std::io::Write;
+
 mod readfile;
 
 const NENTRIES: usize = 100;
@@ -10,14 +13,17 @@ fn main() {
     let values2 = readfile::readfile(FNAME2, VARNAME, NENTRIES);
     assert_eq!(values1.len(), values2.len(), "The lengths of values1 and values2 are not equal");
     
-    let differences: Vec<_> = values1.iter().zip(values2.iter()).map(|(&x, &y)| x - y).collect();
-    assert_eq!(values1.len(), differences.len(), "The lengths of values1 and differences are not equal");
+    let diffs_abs: Vec<_> = values1.iter().zip(values2.iter()).map(|(&x, &y)| x - y).collect();
+    let diffs_rel: Vec<_> = values1.iter().zip(values2.iter()).map(|(&x, &y)| (x - y) / (x + y)).collect();
+    assert_eq!(values1.len(), diffs_abs.len(), "The lengths of values1 and differences are not equal");
+    assert_eq!(values1.len(), diffs_rel.len(), "The lengths of values1 and differences are not equal");
     
-    for (((index1, number1), number2), diff) in values1.iter().enumerate().zip(values2.iter()).zip(differences.iter()) {
-        println!("Index: {}: ( {}, {}, {} )", index1 + 1, number1, number2, diff);
+    let mut file = File::create("output.txt").expect("Unable to create file");
+
+    for (((number1, number2), dabs), drel) in values1.iter().zip(values2.iter()).zip(diffs_abs.iter()).zip(diffs_rel.iter()) {
+        write!(file, "{}, {}, {}, {}\n", number1, number2, dabs, drel).expect("Unable to write to file");
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;
