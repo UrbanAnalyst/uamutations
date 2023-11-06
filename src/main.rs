@@ -20,8 +20,8 @@ fn main() {
     
     let mut file = File::create("output.txt").expect("Unable to create file");
 
-    for (((number1, number2), dabs), drel) in values1.iter().zip(values2.iter()).zip(diffs_abs.iter()).zip(diffs_rel.iter()) {
-        write!(file, "{}, {}, {}, {}\n", number1, number2, dabs, drel).expect("Unable to write to file");
+    for (((((number1, number2), dabs), drel), i1), i2) in values1.iter().zip(values2.iter()).zip(diffs_abs.iter()).zip(diffs_rel.iter()).zip(_index1.iter()).zip(_index2.iter()) {
+        write!(file, "{}, {}, {}, {}, {}, {}\n", number1, number2, dabs, drel, i1, i2).expect("Unable to write to file");
     }
 }
 
