@@ -17,11 +17,18 @@ fn main() {
     let diffs_rel: Vec<_> = values1.iter().zip(values2.iter()).map(|(&x, &y)| (y - x) / (x + y)).collect();
     assert_eq!(values1.len(), diffs_abs.len(), "The lengths of values1 and differences are not equal");
     assert_eq!(values1.len(), diffs_rel.len(), "The lengths of values1 and differences are not equal");
+
+    // Calculate an index of greatest absolute values of 'drel':
+    let mut pairs: Vec<_> = diffs_rel.clone().into_iter().enumerate().collect();
+    pairs.sort_by(|&(_, a), &(_, b)| b.abs().partial_cmp(&a.abs()).unwrap());
+
+    let ord_index: Vec<_> = pairs.iter().map(|&(index, _)| index).collect();
     
     let mut file = File::create("output.txt").expect("Unable to create file");
 
-    for (((((number1, number2), dabs), drel), i1), i2) in values1.iter().zip(values2.iter()).zip(diffs_abs.iter()).zip(diffs_rel.iter()).zip(index1.iter()).zip(index2.iter()) {
-        write!(file, "{}, {}, {}, {}, {}, {}\n", number1, number2, dabs, drel, i1, i2).expect("Unable to write to file");
+    for ((((((number1, number2), dabs), drel), i1), i2), oi) in values1.iter().zip(values2.iter()).zip(diffs_abs.iter()).zip(diffs_rel.iter()).zip(index1.iter()).zip(index2.iter()).zip(ord_index.iter()) {
+
+        write!(file, "{}, {}, {}, {}, {}, {}, {}\n", number1, number2, dabs, drel, i1, i2, oi).expect("Unable to write to file");
     }
 }
 
