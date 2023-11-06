@@ -9,8 +9,8 @@ const FNAME2: &str = "dat2.json";
 const VARNAME: &str = "bike_index";
 
 fn main() {
-    let (_index1, values1) = readfile::readfile(FNAME1, VARNAME, NENTRIES);
-    let (_index2, values2) = readfile::readfile(FNAME2, VARNAME, NENTRIES);
+    let (index1, values1) = readfile::readfile(FNAME1, VARNAME, NENTRIES);
+    let (index2, values2) = readfile::readfile(FNAME2, VARNAME, NENTRIES);
     assert_eq!(values1.len(), values2.len(), "The lengths of values1 and values2 are not equal");
     
     let diffs_abs: Vec<_> = values1.iter().zip(values2.iter()).map(|(&x, &y)| y - x).collect();
@@ -20,7 +20,7 @@ fn main() {
     
     let mut file = File::create("output.txt").expect("Unable to create file");
 
-    for (((((number1, number2), dabs), drel), i1), i2) in values1.iter().zip(values2.iter()).zip(diffs_abs.iter()).zip(diffs_rel.iter()).zip(_index1.iter()).zip(_index2.iter()) {
+    for (((((number1, number2), dabs), drel), i1), i2) in values1.iter().zip(values2.iter()).zip(diffs_abs.iter()).zip(diffs_rel.iter()).zip(index1.iter()).zip(index2.iter()) {
         write!(file, "{}, {}, {}, {}, {}, {}\n", number1, number2, dabs, drel, i1, i2).expect("Unable to write to file");
     }
 }
