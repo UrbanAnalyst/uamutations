@@ -1,7 +1,10 @@
 [package]
 name = "uamutations"
 version = "0.1.0"
+authors = ["Mark Padgham <mark.padgham@email.com>"]
 edition = "2021"
+repository = "https://github.com/UrbanAnalyst/uamutations"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
