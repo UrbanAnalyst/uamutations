@@ -46,9 +46,10 @@ mod tests {
         let varname = "transport";
         let nentries = 10;
 
-        let result = readfile(filename, varname, nentries);
+        let (indices, result) = readfile(filename, varname, nentries);
 
         assert_eq!(result.len(), nentries);
+        assert_eq!(indices.len(), nentries);
 
         for value in &result {
             assert!(*value >= 0.0, "Found value less than 0");
