@@ -6,15 +6,15 @@ mod readfile;
 const NENTRIES: usize = 100;
 const FNAME1: &str = "dat1.json";
 const FNAME2: &str = "dat2.json";
-const VARNAME: &str = "transport";
+const VARNAME: &str = "bike_index";
 
 fn main() {
     let values1 = readfile::readfile(FNAME1, VARNAME, NENTRIES);
     let values2 = readfile::readfile(FNAME2, VARNAME, NENTRIES);
     assert_eq!(values1.len(), values2.len(), "The lengths of values1 and values2 are not equal");
     
-    let diffs_abs: Vec<_> = values1.iter().zip(values2.iter()).map(|(&x, &y)| x - y).collect();
-    let diffs_rel: Vec<_> = values1.iter().zip(values2.iter()).map(|(&x, &y)| (x - y) / (x + y)).collect();
+    let diffs_abs: Vec<_> = values1.iter().zip(values2.iter()).map(|(&x, &y)| y - x).collect();
+    let diffs_rel: Vec<_> = values1.iter().zip(values2.iter()).map(|(&x, &y)| (y - x) / (x + y)).collect();
     assert_eq!(values1.len(), diffs_abs.len(), "The lengths of values1 and differences are not equal");
     assert_eq!(values1.len(), diffs_rel.len(), "The lengths of values1 and differences are not equal");
     
