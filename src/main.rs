@@ -9,8 +9,8 @@ const FNAME2: &str = "dat2.json";
 const VARNAME: &str = "bike_index";
 
 fn main() {
-    let (_indices1, values1) = readfile::readfile(FNAME1, VARNAME, NENTRIES);
-    let (_indices2, values2) = readfile::readfile(FNAME2, VARNAME, NENTRIES);
+    let (_index1, values1) = readfile::readfile(FNAME1, VARNAME, NENTRIES);
+    let (_index2, values2) = readfile::readfile(FNAME2, VARNAME, NENTRIES);
     assert_eq!(values1.len(), values2.len(), "The lengths of values1 and values2 are not equal");
     
     let diffs_abs: Vec<_> = values1.iter().zip(values2.iter()).map(|(&x, &y)| y - x).collect();
@@ -32,12 +32,12 @@ mod tests {
 
     #[test]
     fn test_values_sorted() {
-        let (indices1, values1) = readfile::readfile(FNAME1, VARNAME, NENTRIES);
-        let (indices2, values2) = readfile::readfile(FNAME2, VARNAME, NENTRIES);
+        let (index1, values1) = readfile::readfile(FNAME1, VARNAME, NENTRIES);
+        let (index2, values2) = readfile::readfile(FNAME2, VARNAME, NENTRIES);
 
         assert_eq!(values1.len(), values2.len(), "The lengths of values1 and values2 are not equal");
-        assert_eq!(values1.len(), indices1.len(), "The lengths of values1 and indices1 are not equal");
-        assert_eq!(values1.len(), indices2.len(), "The lengths of values1 and indices2 are not equal");
+        assert_eq!(values1.len(), index1.len(), "The lengths of values1 and index1 are not equal");
+        assert_eq!(values1.len(), index2.len(), "The lengths of values1 and index2 are not equal");
         // assert!(values1.iter().tuple_windows().all(|(a, b)| a <= b), "values1 is not sorted");
         // assert!(values2.iter().tuple_windows().all(|(a, b)| a <= b), "values2 is not sorted");
     }

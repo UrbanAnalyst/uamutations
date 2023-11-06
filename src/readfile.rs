@@ -30,9 +30,9 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
     let mut pairs: Vec<_> = values.clone().into_iter().enumerate().collect();
     pairs.sort_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap());
 
-    let indices: Vec<usize> = pairs.iter().map(|&(index, _)| index).collect();
+    let index: Vec<usize> = pairs.iter().map(|&(index, _)| index).collect();
 
-    (indices, values)
+    (index, values)
 }
 
 #[cfg(test)]
@@ -45,10 +45,10 @@ mod tests {
         let varname = "transport";
         let nentries = 10;
 
-        let (indices, result) = readfile(filename, varname, nentries);
+        let (index, result) = readfile(filename, varname, nentries);
 
         assert_eq!(result.len(), nentries);
-        assert_eq!(indices.len(), nentries);
+        assert_eq!(index.len(), nentries);
 
         for value in &result {
             assert!(*value >= 0.0, "Found value less than 0");
