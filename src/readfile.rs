@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use serde_json::Value;
 use std::fs::File;
 use std::io::BufReader;
@@ -32,6 +33,16 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
 
     let index: Vec<usize> = values.iter().map(|&(index, _)| index).collect();
     let values: Vec<f64> = values.iter().map(|&(_, value)| value).collect();
+
+    assert_eq!(
+        index.len(),
+        values.len(),
+        "The lengths of index and values are not equal"
+    );
+    assert!(
+        values.iter().tuple_windows().all(|(a, b)| a <= b),
+        "values are not sorted"
+    );
 
     (index, values)
 }
