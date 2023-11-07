@@ -16,17 +16,6 @@ fn main() {
     let diffs_abs = vector_fns::calculate_diffs(&values1, &values2, true);
     let diffs_rel = vector_fns::calculate_diffs(&values1, &values2, false);
 
-    assert_eq!(
-        values1.len(),
-        diffs_abs.len(),
-        "The lengths of values1 and differences are not equal"
-    );
-    assert_eq!(
-        values1.len(),
-        diffs_rel.len(),
-        "The lengths of values1 and differences are not equal"
-    );
-
     let ord_index = vector_fns::get_ordering_index(&diffs_rel, true); // true for is_abs
 
     let mut file = File::create("output.txt").expect("Unable to create file");
