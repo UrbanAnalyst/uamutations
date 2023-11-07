@@ -58,6 +58,15 @@ pub fn write_file(
     ord_index: &Vec<usize>,
     filename: &str,
 ) {
+    const ERR_MSG: &str = "All input vectors must have the same length";
+    let len = values1.len();
+    assert_eq!(values2.len(), len, "{}", ERR_MSG);
+    assert_eq!(diffs_abs.len(), len, "{}", ERR_MSG);
+    assert_eq!(diffs_rel.len(), len, "{}", ERR_MSG);
+    assert_eq!(index1.len(), len, "{}", ERR_MSG);
+    assert_eq!(index2.len(), len, "{}", ERR_MSG);
+    assert_eq!(ord_index.len(), len, "{}", ERR_MSG);
+
     let mut file = File::create(filename).expect("Unable to create file");
 
     for ((((((number1, number2), dabs), drel), i1), i2), oi) in values1
