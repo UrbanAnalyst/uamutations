@@ -48,34 +48,35 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
     (index, values)
 }
 
-pub fn write_file(
-    values1: &Vec<f64>,
-    values2: &Vec<f64>,
-    diffs_abs: &Vec<f64>,
-    diffs_rel: &Vec<f64>,
-    index1: &Vec<usize>,
-    index2: &Vec<usize>,
-    ord_index: &Vec<usize>,
-    filename: &str,
-) {
+pub struct WriteData {
+    pub values1: Vec<f64>,
+    pub values2: Vec<f64>,
+    pub diffs_abs: Vec<f64>,
+    pub diffs_rel: Vec<f64>,
+    pub index1: Vec<usize>,
+    pub index2: Vec<usize>,
+}
+
+pub fn write_file(data: &WriteData, ord_index: &Vec<usize>, filename: &str) {
     const ERR_MSG: &str = "All input vectors must have the same length";
-    let len = values1.len();
-    assert_eq!(values2.len(), len, "{}", ERR_MSG);
-    assert_eq!(diffs_abs.len(), len, "{}", ERR_MSG);
-    assert_eq!(diffs_rel.len(), len, "{}", ERR_MSG);
-    assert_eq!(index1.len(), len, "{}", ERR_MSG);
-    assert_eq!(index2.len(), len, "{}", ERR_MSG);
+    let len = data.values1.len();
+    assert_eq!(data.values2.len(), len, "{}", ERR_MSG);
+    assert_eq!(data.diffs_abs.len(), len, "{}", ERR_MSG);
+    assert_eq!(data.diffs_rel.len(), len, "{}", ERR_MSG);
+    assert_eq!(data.index1.len(), len, "{}", ERR_MSG);
+    assert_eq!(data.index2.len(), len, "{}", ERR_MSG);
     assert_eq!(ord_index.len(), len, "{}", ERR_MSG);
 
     let mut file = File::create(filename).expect("Unable to create file");
 
-    for ((((((number1, number2), dabs), drel), i1), i2), oi) in values1
+    for ((((((number1, number2), dabs), drel), i1), i2), oi) in data
+        .values1
         .iter()
-        .zip(values2.iter())
-        .zip(diffs_abs.iter())
-        .zip(diffs_rel.iter())
-        .zip(index1.iter())
-        .zip(index2.iter())
+        .zip(data.values2.iter())
+        .zip(data.diffs_abs.iter())
+        .zip(data.diffs_rel.iter())
+        .zip(data.index1.iter())
+        .zip(data.index2.iter())
         .zip(ord_index.iter())
     {
         writeln!(
@@ -152,18 +153,18 @@ mod tests {
         use std::fs;
         use std::io::Read;
 
-        let values1 = vec![1.0, 2.0, 3.0];
-        let values2 = vec![4.0, 5.0, 6.0];
-        let diffs_abs = vec![7.0, 8.0, 9.0];
-        let diffs_rel = vec![10.0, 11.0, 12.0];
-        let index1 = vec![13, 14, 15];
-        let index2 = vec![16, 17, 18];
+        let testdata = WriteData {
+            values1: vec![1.0, 2.0, 3.0],
+            values2: vec![4.0, 5.0, 6.0],
+            diffs_abs: vec![7.0, 8.0, 9.0],
+            diffs_rel: vec![10.0, 11.0, 12.0],
+            index1: vec![13, 14, 15],
+            index2: vec![16, 17, 18],
+        };
         let ord_index = vec![19, 20, 21];
         let filename = "/tmp/test_write_file.txt";
 
-        write_file(
-            &values1, &values2, &diffs_abs, &diffs_rel, &index1, &index2, &ord_index, filename,
-        );
+        write_file(&testdata, &ord_index, filename);
 
         let mut file = fs::File::open(filename).expect("Unable to open file");
         let mut contents = String::new();

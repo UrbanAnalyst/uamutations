@@ -2,6 +2,7 @@ mod read_write_file;
 mod vector_fns;
 
 const NENTRIES: usize = 1000;
+
 const FNAME1: &str = "./test_resources/dat1.json";
 const FNAME2: &str = "./test_resources/dat2.json";
 const VARNAME: &str = "bike_index";
@@ -16,14 +17,14 @@ fn main() {
 
     let ord_index = vector_fns::get_ordering_index(&diffs_rel, true); // true for is_abs
 
-    read_write_file::write_file(
-        &values1,
-        &values2,
-        &diffs_abs,
-        &diffs_rel,
-        &index1,
-        &index2,
-        &ord_index,
-        OUTFILENAME,
-    );
+    let write_data = read_write_file::WriteData {
+        values1,
+        values2,
+        diffs_abs,
+        diffs_rel,
+        index1,
+        index2,
+    };
+
+    read_write_file::write_file(&write_data, &ord_index, OUTFILENAME);
 }
