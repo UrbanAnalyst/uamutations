@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::Write;
 
 mod readfile;
+mod sort_fns;
 
 const NENTRIES: usize = 1000;
 const FNAME1: &str = "dat1.json";
@@ -30,12 +31,8 @@ fn main() {
     assert_eq!(values1.len(), diffs_abs.len(), "The lengths of values1 and differences are not equal");
     assert_eq!(values1.len(), diffs_rel.len(), "The lengths of values1 and differences are not equal");
 
-    // Calculate an index of greatest absolute values of 'drel':
-    let mut pairs: Vec<_> = diffs_rel.clone().into_iter().enumerate().collect();
-    pairs.sort_by(|&(_, a), &(_, b)| b.abs().partial_cmp(&a.abs()).unwrap());
+    let ord_index = sort_fns::get_ordering_index(&diffs_rel);
 
-    let ord_index: Vec<_> = pairs.iter().map(|&(index, _)| index).collect();
-    
     let mut file = File::create("output.txt").expect("Unable to create file");
 
 for ((((((number1, number2), dabs), drel), i1), i2), oi) in 
