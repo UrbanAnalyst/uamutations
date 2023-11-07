@@ -56,8 +56,9 @@ pub fn write_file(
     index1: &Vec<usize>,
     index2: &Vec<usize>,
     ord_index: &Vec<usize>,
+    filename: &str,
 ) {
-    let mut file = File::create("output.txt").expect("Unable to create file");
+    let mut file = File::create(filename).expect("Unable to create file");
 
     for ((((((number1, number2), dabs), drel), i1), i2), oi) in values1
         .iter()

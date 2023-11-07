@@ -5,6 +5,7 @@ const NENTRIES: usize = 1000;
 const FNAME1: &str = "dat1.json";
 const FNAME2: &str = "dat2.json";
 const VARNAME: &str = "bike_index";
+const OUTFILENAME: &str = "output.txt";
 
 fn main() {
     let (index1, values1) = read_write_file::readfile(FNAME1, VARNAME, NENTRIES);
@@ -16,6 +17,13 @@ fn main() {
     let ord_index = vector_fns::get_ordering_index(&diffs_rel, true); // true for is_abs
 
     read_write_file::write_file(
-        &values1, &values2, &diffs_abs, &diffs_rel, &index1, &index2, &ord_index,
+        &values1,
+        &values2,
+        &diffs_abs,
+        &diffs_rel,
+        &index1,
+        &index2,
+        &ord_index,
+        OUTFILENAME,
     );
 }
