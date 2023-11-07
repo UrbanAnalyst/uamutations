@@ -31,7 +31,7 @@ fn main() {
     assert_eq!(values1.len(), diffs_abs.len(), "The lengths of values1 and differences are not equal");
     assert_eq!(values1.len(), diffs_rel.len(), "The lengths of values1 and differences are not equal");
 
-    let ord_index = sort_fns::get_ordering_index(&diffs_rel);
+    let ord_index = sort_fns::get_ordering_index(&diffs_rel, true); // true for is_abs
 
     let mut file = File::create("output.txt").expect("Unable to create file");
 
