@@ -8,6 +8,7 @@ pub fn get_ordering_index(vals: &Vec<f64>, is_abs: bool) -> Vec<usize> {
     }
 
     let index: Vec<_> = pairs.iter().map(|&(index, _)| index).collect();
+
     index
 }
 
