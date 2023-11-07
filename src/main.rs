@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::Write;
 
 mod readfile;
-mod sort_fns;
+mod vector_fns;
 
 const NENTRIES: usize = 1000;
 const FNAME1: &str = "dat1.json";
@@ -13,17 +13,8 @@ fn main() {
     let (index1, values1) = readfile::readfile(FNAME1, VARNAME, NENTRIES);
     let (index2, values2) = readfile::readfile(FNAME2, VARNAME, NENTRIES);
 
-    let diffs_abs: Vec<_> = values1
-        .iter()
-        .zip(values2.iter())
-        .map(|(&x, &y)| y - x)
-        .collect();
-
-    let diffs_rel: Vec<_> = values1
-        .iter()
-        .zip(values2.iter())
-        .map(|(&x, &y)| (y - x) / (x + y))
-        .collect();
+    let diffs_abs = vector_fns::calculate_diffs(&values1, &values2, true);
+    let diffs_rel = vector_fns::calculate_diffs(&values1, &values2, false);
 
     assert_eq!(
         values1.len(),
@@ -36,7 +27,7 @@ fn main() {
         "The lengths of values1 and differences are not equal"
     );
 
-    let ord_index = sort_fns::get_ordering_index(&diffs_rel, true); // true for is_abs
+    let ord_index = vector_fns::get_ordering_index(&diffs_rel, true); // true for is_abs
 
     let mut file = File::create("output.txt").expect("Unable to create file");
 

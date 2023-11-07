@@ -30,3 +30,21 @@ mod tests {
         assert_eq!(get_ordering_index(&vals, true), expected);
     }
 }
+
+pub fn calculate_diffs(values1: &Vec<f64>, values2: &Vec<f64>, absolute: bool) -> Vec<f64> {
+    // Full calls for the two cases, because `if`/`else` clauses require same type, and the `map`
+    // calls generate different types.
+    if absolute {
+        values1
+            .iter()
+            .zip(values2.iter())
+            .map(|(&x, &y)| y - x)
+            .collect()
+    } else {
+        values1
+            .iter()
+            .zip(values2.iter())
+            .map(|(&x, &y)| (y - x) / (x + y))
+            .collect()
+    }
+}
