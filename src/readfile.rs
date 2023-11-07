@@ -39,19 +39,51 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use itertools::Itertools;
 
     #[test]
     fn test_readfile() {
-        let filename = "dat1.json";
+        let filename1 = "dat1.json";
+        let filename2 = "dat2.json";
         let varname = "transport";
         let nentries = 10;
 
-        let (index, result) = readfile(filename, varname, nentries);
+        let (index1, values1) = readfile(filename1, varname, nentries);
+        let (index2, values2) = readfile(filename2, varname, nentries);
 
-        assert_eq!(result.len(), nentries);
-        assert_eq!(index.len(), nentries);
+        assert_eq!(
+            index1.len(),
+            nentries,
+            "The lengths of index1 and values1 are not equal"
+        );
+        assert_eq!(
+            values1.len(),
+            nentries,
+            "The lengths of index1 and values1 are not equal"
+        );
+        assert_eq!(
+            index2.len(),
+            nentries,
+            "The lengths of index2 and values2 are not equal"
+        );
+        assert_eq!(
+            values2.len(),
+            nentries,
+            "The lengths of values1 and values2 are not equal"
+        );
+        assert!(
+            values1.iter().tuple_windows().all(|(a, b)| a <= b),
+            "values1 is not sorted"
+        );
+        assert!(
+            values2.iter().tuple_windows().all(|(a, b)| a <= b),
+            "values2 is not sorted"
+        );
 
-        for value in &result {
+        for value in &values1 {
+            assert!(*value >= 0.0, "Found value less than 0");
+        }
+        for value in &values2 {
             assert!(*value >= 0.0, "Found value less than 0");
         }
     }
