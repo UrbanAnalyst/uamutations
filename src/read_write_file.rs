@@ -2,6 +2,7 @@ use itertools::Itertools;
 use serde_json::Value;
 use std::fs::File;
 use std::io::BufReader;
+use std::io::Write;
 
 pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, Vec<f64>) {
     let file = File::open(filename).unwrap();
@@ -45,6 +46,35 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
     );
 
     (index, values)
+}
+
+pub fn write_file(
+    values1: &Vec<f64>,
+    values2: &Vec<f64>,
+    diffs_abs: &Vec<f64>,
+    diffs_rel: &Vec<f64>,
+    index1: &Vec<usize>,
+    index2: &Vec<usize>,
+    ord_index: &Vec<usize>,
+) {
+    let mut file = File::create("output.txt").expect("Unable to create file");
+
+    for ((((((number1, number2), dabs), drel), i1), i2), oi) in values1
+        .iter()
+        .zip(values2.iter())
+        .zip(diffs_abs.iter())
+        .zip(diffs_rel.iter())
+        .zip(index1.iter())
+        .zip(index2.iter())
+        .zip(ord_index.iter())
+    {
+        write!(
+            file,
+            "{}, {}, {}, {}, {}, {}, {}\n",
+            number1, number2, dabs, drel, i1, i2, oi
+        )
+        .expect("Unable to write to file");
+    }
 }
 
 #[cfg(test)]
