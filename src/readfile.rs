@@ -3,6 +3,7 @@ use std::io::BufReader;
 use serde_json::Value;
 
 pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, Vec<f64>) {
+
     let file = File::open(filename).unwrap();
     let reader = BufReader::new(file);
 
