@@ -20,11 +20,9 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
                 break;
             }
             if let Value::Object(map) = item {
-                if let Some(value) = map.get(varname) {
-                    if let Value::Number(number) = value {
-                        if let Some(number) = number.as_f64() {
-                            values.push(number);
-                        }
+                if let Some(Value::Number(number)) = map.get(varname) {
+                    if let Some(number) = number.as_f64() {
+                        values.push(number);
                     }
                 }
             }
@@ -80,9 +78,9 @@ pub fn write_file(
         .zip(index2.iter())
         .zip(ord_index.iter())
     {
-        write!(
+        writeln!(
             file,
-            "{}, {}, {}, {}, {}, {}, {}\n",
+            "{}, {}, {}, {}, {}, {}, {}",
             number1, number2, dabs, drel, i1, i2, oi
         )
         .expect("Unable to write to file");
