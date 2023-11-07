@@ -5,6 +5,8 @@ use std::io::BufReader;
 use std::io::Write;
 
 pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, Vec<f64>) {
+    assert!(nentries > 0, "nentries must be greater than zero");
+
     let file = File::open(filename).unwrap();
     let reader = BufReader::new(file);
 
@@ -97,6 +99,14 @@ mod tests {
         let filename1 = "./test_resources/dat1.json";
         let filename2 = "./test_resources/dat2.json";
         let varname = "transport";
+
+        // Test when nentries <= 0
+        let nentries = 0;
+        let result = std::panic::catch_unwind(|| {
+            readfile(filename1, varname, nentries);
+        });
+        assert!(result.is_err(), "Expected an error when nentries <= 0");
+
         let nentries = 10;
 
         let (index1, values1) = readfile(filename1, varname, nentries);
