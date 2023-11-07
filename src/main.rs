@@ -2,8 +2,8 @@ mod read_write_file;
 mod vector_fns;
 
 const NENTRIES: usize = 1000;
-const FNAME1: &str = "dat1.json";
-const FNAME2: &str = "dat2.json";
+const FNAME1: &str = "./test_resources/dat1.json";
+const FNAME2: &str = "./test_resources/dat2.json";
 const VARNAME: &str = "bike_index";
 const OUTFILENAME: &str = "output.txt";
 

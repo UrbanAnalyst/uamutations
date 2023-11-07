@@ -85,8 +85,8 @@ mod tests {
 
     #[test]
     fn test_readfile() {
-        let filename1 = "dat1.json";
-        let filename2 = "dat2.json";
+        let filename1 = "./test_resources/dat1.json";
+        let filename2 = "./test_resources/dat2.json";
         let varname = "transport";
         let nentries = 10;
 
