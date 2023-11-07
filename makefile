@@ -15,3 +15,6 @@ fmt:
 coverage:
 	# cargo llvm-coverage
 	cargo tarpaulin
+
+lint:
+	cargo clippy
