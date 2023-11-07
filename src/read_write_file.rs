@@ -138,4 +138,35 @@ mod tests {
             assert!(*value >= 0.0, "Found value less than 0");
         }
     }
+
+    #[test]
+    fn test_write_file() {
+        use std::fs;
+        use std::io::Read;
+
+        let values1 = vec![1.0, 2.0, 3.0];
+        let values2 = vec![4.0, 5.0, 6.0];
+        let diffs_abs = vec![7.0, 8.0, 9.0];
+        let diffs_rel = vec![10.0, 11.0, 12.0];
+        let index1 = vec![13, 14, 15];
+        let index2 = vec![16, 17, 18];
+        let ord_index = vec![19, 20, 21];
+        let filename = "/tmp/test_write_file.txt";
+
+        write_file(
+            &values1, &values2, &diffs_abs, &diffs_rel, &index1, &index2, &ord_index, filename,
+        );
+
+        let mut file = fs::File::open(filename).expect("Unable to open file");
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)
+            .expect("Unable to read file");
+
+        let expected_contents = "\
+            1, 4, 7, 10, 13, 16, 19\n\
+            2, 5, 8, 11, 14, 17, 20\n\
+            3, 6, 9, 12, 15, 18, 21\n";
+
+        assert_eq!(contents, expected_contents);
+    }
 }
