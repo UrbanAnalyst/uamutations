@@ -5,13 +5,6 @@
 pub mod read_write_file;
 pub mod vector_fns;
 
-const NENTRIES: usize = 1000;
-
-const FNAME1: &str = "./test_resources/dat1.json";
-const FNAME2: &str = "./test_resources/dat2.json";
-const VARNAME: &str = "bike_index";
-const OUTFILENAME: &str = "output.txt";
-
 /// This is the main function, which reads data from two JSON files, calculates absolute and
 /// relative differences between the two sets of data, and writes the results to an output file.
 ///
@@ -35,9 +28,9 @@ const OUTFILENAME: &str = "output.txt";
 /// # Panics
 ///
 /// This function will panic if the input files cannot be read, or if the output file cannot be written.
-pub fn uamutate() {
-    let (index1, values1) = read_write_file::readfile(FNAME1, VARNAME, NENTRIES);
-    let (index2, values2) = read_write_file::readfile(FNAME2, VARNAME, NENTRIES);
+pub fn uamutate(fname1: &str, fname2: &str, varname: &str, nentries: usize, outfilename: &str) {
+    let (index1, values1) = read_write_file::readfile(fname1, varname, nentries);
+    let (index2, values2) = read_write_file::readfile(fname2, varname, nentries);
 
     let diffs_abs = vector_fns::calculate_diffs(&values1, &values2, true);
     let diffs_rel = vector_fns::calculate_diffs(&values1, &values2, false);
@@ -62,5 +55,5 @@ pub fn uamutate() {
         index2,
     };
 
-    read_write_file::write_file(&write_data, &ord_index, OUTFILENAME);
+    read_write_file::write_file(&write_data, &ord_index, outfilename);
 }
