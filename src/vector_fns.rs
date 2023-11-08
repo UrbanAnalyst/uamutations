@@ -1,32 +1,3 @@
-/// Returns a vector of indices that would sort the input vector in descending order.
-///
-/// # Arguments
-///
-/// * `vals` - A slice of f64 values to be sorted.
-/// * `is_abs` - A boolean indicating whether sorting should be based on absolute values.
-///
-/// # Example
-///
-/// ```
-/// use uamutations::vector_fns::get_ordering_index;
-/// let vals = vec![1.0, -2.0, 3.0, -4.0, 5.0];
-/// let result = get_ordering_index(&vals, false);
-/// assert_eq!(result, vec![4, 2, 0, 1, 3]);
-/// ```
-pub fn get_ordering_index(vals: &[f64], is_abs: bool) -> Vec<usize> {
-    let mut pairs: Vec<_> = vals.iter().enumerate().collect();
-
-    if is_abs {
-        pairs.sort_by(|&(_, a), &(_, b)| b.abs().partial_cmp(&a.abs()).unwrap());
-    } else {
-        pairs.sort_by(|&(_, a), &(_, b)| b.partial_cmp(a).unwrap());
-    }
-
-    let index: Vec<_> = pairs.iter().map(|&(index, _)| index).collect();
-
-    index
-}
-
 /// Calculates a vector of sequential difference between two vectors of f64 values.
 ///
 /// # Arguments
@@ -80,6 +51,35 @@ pub fn calculate_diffs(values1: &Vec<f64>, values2: &Vec<f64>, absolute: bool) -
             .map(|(&x, &y)| (y - x) / x)
             .collect()
     }
+}
+
+/// Returns a vector of indices that would sort the input vector in descending order.
+///
+/// # Arguments
+///
+/// * `vals` - A slice of f64 values to be sorted.
+/// * `is_abs` - A boolean indicating whether sorting should be based on absolute values.
+///
+/// # Example
+///
+/// ```
+/// use uamutations::vector_fns::get_ordering_index;
+/// let vals = vec![1.0, -2.0, 3.0, -4.0, 5.0];
+/// let result = get_ordering_index(&vals, false);
+/// assert_eq!(result, vec![4, 2, 0, 1, 3]);
+/// ```
+pub fn get_ordering_index(vals: &[f64], is_abs: bool) -> Vec<usize> {
+    let mut pairs: Vec<_> = vals.iter().enumerate().collect();
+
+    if is_abs {
+        pairs.sort_by(|&(_, a), &(_, b)| b.abs().partial_cmp(&a.abs()).unwrap());
+    } else {
+        pairs.sort_by(|&(_, a), &(_, b)| b.partial_cmp(a).unwrap());
+    }
+
+    let index: Vec<_> = pairs.iter().map(|&(index, _)| index).collect();
+
+    index
 }
 
 #[cfg(test)]
