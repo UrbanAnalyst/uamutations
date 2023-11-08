@@ -45,6 +45,26 @@ pub fn uamutate(fname1: &str, fname2: &str, varname: &str, nentries: usize, outf
     let values: Vec<_> = index1.iter().map(|&i| values1[i]).collect();
     let groups: Vec<_> = index1.iter().map(|&i| _groups1[i]).collect();
 
+    // Then aggregate 'diffs' within 'groups', first by direct aggregation along with counts of
+    // numbers of values aggregated within each group.
+    let max_group = *groups.iter().max().unwrap();
+    let mut counts = vec![0u32; max_group + 1];
+    let mut sums = vec![0f64; max_group + 1];
+
+    for (i, &group) in groups.iter().enumerate() {
+        counts[group] += 1;
+        sums[group] += diffs[i];
+    }
+
+    // Then convert sums to mean values by dividing by counts:
+    for (sum, count) in sums.iter_mut().zip(&counts) {
+        *sum = if *count != 0 {
+            *sum / *count as f64
+        } else {
+            0.0
+        };
+    }
+
     let write_data = read_write_file::WriteData {
         values,
         diffs,
