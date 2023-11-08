@@ -124,7 +124,7 @@ pub fn write_file(sums: &[f64], filename: &str) {
     let mut file = File::create(filename).expect("Unable to create file");
 
     // Write the header line
-    writeln!(file, "mutations").expect("Unable to write to file");
+    writeln!(file, "mutation").expect("Unable to write to file");
 
     for s in sums.iter() {
         writeln!(file, "{}", s).expect("Unable to write to file");
@@ -213,7 +213,7 @@ mod tests {
             .expect("Unable to read file");
 
         let expected_contents = "\
-            mutations\n\
+            mutation\n\
             1\n\
             4.5\n\
             3\n\

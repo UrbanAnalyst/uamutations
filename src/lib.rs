@@ -103,6 +103,6 @@ mod tests {
 
         // Check that the header contains the expected columns
         let header = &lines[0];
-        assert!(header.contains("mutations"));
+        assert!(header.contains("mutation"));
     }
 }
