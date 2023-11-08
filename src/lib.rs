@@ -25,13 +25,8 @@ pub mod vector_fns;
 /// 4. Writes the original data, the differences, and the ordering index to `outfilename`.
 ///
 /// The following seven vectors of equal length are written to the output file:
-/// 1. values1: Ordered vector of values which are to be changed = "from" values
-/// 2. index1: Index mapping back to original order of 'values1'
-/// 3. values2: Ordered vector of values to be mutated towards = "to" values
-/// 4. index2: Index mapping back to original order of 'values2'
-/// 5. diffs_abs: Vector of absolute differences between 'values1' and 'values2'
-/// 6. diffs_rel: Vector of relative differences between 'values1' and 'values2'
-/// 7. ord_index: Index mapping order of 'diffs_rel' back onto original order of 'values1'.
+/// 1. values: The original values of 'varname' from 'fname1'.
+/// 2. diffs: The relative degree by which each should be mutated.
 ///
 /// # Panics
 ///
