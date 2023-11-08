@@ -26,7 +26,7 @@ pub mod vector_fns;
 ///
 /// The following seven vectors of equal length are written to the output file:
 /// 1. values: The original values of 'varname' from 'fname1'.
-/// 2. diffs: The relative degree by which each should be mutated.
+/// 2. dists: The relative degree by which each should be mutated.
 ///
 /// # Panics
 ///
@@ -39,13 +39,13 @@ pub fn uamutate(fname1: &str, fname2: &str, varname: &str, nentries: usize, outf
     // order. The following line then calculates successive differences between the two sets of
     // values, where `false` is for the `absolute` parameter, so that differences are calculated
     // relative to values1.
-    let diffs_sorted = vector_fns::calculate_diffs(&values1, &values2, false);
-    // Then map those diffs back onto the original order of `values1`:
-    let diffs: Vec<_> = index1.iter().map(|&i| diffs_sorted[i]).collect();
+    let dists_sorted = vector_fns::calculate_dists(&values1, &values2, false);
+    // Then map those dists back onto the original order of `values1`:
+    let dists: Vec<_> = index1.iter().map(|&i| dists_sorted[i]).collect();
     // let values: Vec<_> = index1.iter().map(|&i| values1[i]).collect();
     let groups: Vec<_> = index1.iter().map(|&i| _groups1[i]).collect();
 
-    // Then aggregate 'diffs' within 'groups', first by direct aggregation along with counts of
+    // Then aggregate 'dists' within 'groups', first by direct aggregation along with counts of
     // numbers of values aggregated within each group.
     let max_group = *groups.iter().max().unwrap();
     let mut counts = vec![0u32; max_group + 1];
@@ -53,7 +53,7 @@ pub fn uamutate(fname1: &str, fname2: &str, varname: &str, nentries: usize, outf
 
     for (i, &group) in groups.iter().enumerate() {
         counts[group] += 1;
-        sums[group] += diffs[i];
+        sums[group] += dists[i];
     }
 
     // Then convert sums to mean values by dividing by counts:
