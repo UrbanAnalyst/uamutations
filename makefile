@@ -1,4 +1,4 @@
-all: build run test fmt
+all: build run test fmt lint
 
 # Note that 'make help' needs the '## <stuff>' to parse commands
 build: ## main build fn
