@@ -116,6 +116,7 @@ pub fn readfile(
 pub struct WriteData {
     pub values: Vec<f64>,
     pub diffs: Vec<f64>,
+    pub groups: Vec<usize>,
 }
 
 /// Writes the data contained in a [`WriteData`] instance plus one additional vector to a file.
@@ -140,10 +141,10 @@ pub fn write_file(data: &WriteData, filename: &str) {
     let mut file = File::create(filename).expect("Unable to create file");
 
     // Write the header line
-    writeln!(file, "values, diffs").expect("Unable to write to file");
+    writeln!(file, "values, diffs, groups").expect("Unable to write to file");
 
-    for (v, d) in data.values.iter().zip(data.diffs.iter()) {
-        writeln!(file, "{}, {}", v, d).expect("Unable to write to file");
+    for ((v, d), g) in data.values.iter().zip(data.diffs.iter()).zip(data.groups.iter()) {
+        writeln!(file, "{}, {}, {}", v, d, g).expect("Unable to write to file");
     }
 }
 
@@ -206,8 +207,9 @@ mod tests {
         use std::io::Read;
 
         let testdata = WriteData {
-            values: vec![1.0, 2.0, 3.0],
-            diffs: vec![4.0, 5.0, 6.0],
+            values: vec![1.0, 4.5, 3.0, 2.0],
+            diffs: vec![4.0, 12.0, 6.0, 5.0],
+            groups: vec![1, 1, 2, 2],
         };
         let filename = "/tmp/test_write_file.txt";
 
@@ -219,10 +221,11 @@ mod tests {
             .expect("Unable to read file");
 
         let expected_contents = "\
-            values, diffs\n\
-            1, 4\n\
-            2, 5\n\
-            3, 6\n";
+            values, diffs, groups\n\
+            1, 4, 1\n\
+            4.5, 12, 1\n\
+            3, 6, 2\n\
+            2, 5, 2\n";
 
         assert_eq!(contents, expected_contents);
     }
