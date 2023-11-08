@@ -110,55 +110,24 @@ pub fn readfile(
     (original_order, values, groups)
 }
 
-/// `WriteData` is a struct that holds the data needed for the [`write_file`] function which writes
-/// data to a local file.
-///
-/// It contains two sets of values (`values1` and `values2`), their absolute and relative
-/// differences (`diffs_abs` and `diffs_rel`), and their original indices (`index1` and `index2`).
-///
-/// # Fields
-///
-/// * `values` - Vector of values which are to be mutated, in original order.
-/// * `diffs` - Correponding vector of relative differences following mutation.
-///
-/// [`write_file`]: fn.write_file.html
-pub struct WriteData {
-    pub values: Vec<f64>,
-    pub diffs: Vec<f64>,
-    pub groups: Vec<usize>,
-}
-
-/// Writes the data contained in a [`WriteData`] instance plus one additional vector to a file.
-///
-/// The function takes a reference to a [`WriteData`] instance, a reference to a vector of ordering
-/// indices, and a filename as arguments.
+/// Writes the mean mutation values to a file.
 ///
 /// # Arguments
 ///
-/// * `data` - A reference to a [`WriteData`] instance containing the data to be written.
+/// * `sums` - Mutation values aggregated into city polygons.
 /// * `filename` - The name of the file to which the data will be written.
 ///
 /// # Panics
 ///
 /// This function will panic if it fails to create or write to the file.
-///
-/// [`WriteData`]: struct.WriteData.html
-pub fn write_file(data: &WriteData, filename: &str) {
-    const ERR_MSG: &str = "All input vectors must have the same length";
-    assert_eq!(data.values.len(), data.diffs.len(), "{}", ERR_MSG);
-
+pub fn write_file(sums: &[f64], filename: &str) {
     let mut file = File::create(filename).expect("Unable to create file");
 
     // Write the header line
-    writeln!(file, "values, diffs, groups").expect("Unable to write to file");
+    writeln!(file, "mutations").expect("Unable to write to file");
 
-    for ((v, d), g) in data
-        .values
-        .iter()
-        .zip(data.diffs.iter())
-        .zip(data.groups.iter())
-    {
-        writeln!(file, "{}, {}, {}", v, d, g).expect("Unable to write to file");
+    for s in sums.iter() {
+        writeln!(file, "{}", s).expect("Unable to write to file");
     }
 }
 
@@ -233,14 +202,10 @@ mod tests {
         use std::fs;
         use std::io::Read;
 
-        let testdata = WriteData {
-            values: vec![1.0, 4.5, 3.0, 2.0],
-            diffs: vec![4.0, 12.0, 6.0, 5.0],
-            groups: vec![1, 1, 2, 2],
-        };
+        let sums = vec![1.0, 4.5, 3.0, 2.0];
         let filename = "/tmp/test_write_file.txt";
 
-        write_file(&testdata, filename);
+        write_file(&sums, filename);
 
         let mut file = fs::File::open(filename).expect("Unable to open file");
         let mut contents = String::new();
@@ -248,11 +213,11 @@ mod tests {
             .expect("Unable to read file");
 
         let expected_contents = "\
-            values, diffs, groups\n\
-            1, 4, 1\n\
-            4.5, 12, 1\n\
-            3, 6, 2\n\
-            2, 5, 2\n";
+            mutations\n\
+            1\n\
+            4.5\n\
+            3\n\
+            2\n";
 
         assert_eq!(contents, expected_contents);
     }

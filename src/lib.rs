@@ -42,7 +42,7 @@ pub fn uamutate(fname1: &str, fname2: &str, varname: &str, nentries: usize, outf
     let diffs_sorted = vector_fns::calculate_diffs(&values1, &values2, false);
     // Then map those diffs back onto the original order of `values1`:
     let diffs: Vec<_> = index1.iter().map(|&i| diffs_sorted[i]).collect();
-    let values: Vec<_> = index1.iter().map(|&i| values1[i]).collect();
+    // let values: Vec<_> = index1.iter().map(|&i| values1[i]).collect();
     let groups: Vec<_> = index1.iter().map(|&i| _groups1[i]).collect();
 
     // Then aggregate 'diffs' within 'groups', first by direct aggregation along with counts of
@@ -65,13 +65,7 @@ pub fn uamutate(fname1: &str, fname2: &str, varname: &str, nentries: usize, outf
         };
     }
 
-    let write_data = read_write_file::WriteData {
-        values,
-        diffs,
-        groups,
-    };
-
-    read_write_file::write_file(&write_data, outfilename);
+    read_write_file::write_file(&sums, outfilename);
 }
 
 #[cfg(test)]
@@ -109,11 +103,6 @@ mod tests {
 
         // Check that the header contains the expected columns
         let header = &lines[0];
-        assert!(header.contains("values"));
-        assert!(header.contains("diffs"));
-        assert!(header.contains("groups"));
-
-        // Check that the file has the expected number of lines (adding 1 for the header)
-        assert_eq!(lines.len(), nentries + 1);
+        assert!(header.contains("mutations"));
     }
 }
