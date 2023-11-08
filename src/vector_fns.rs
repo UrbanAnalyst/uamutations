@@ -48,10 +48,12 @@ pub fn get_ordering_index(vals: &[f64], is_abs: bool) -> Vec<usize> {
 /// # Example
 ///
 /// ```
-/// let values1 = vec![1.0, 2.0, 3.0, 4.0, 5.0];
-/// let values2 = vec![2.0, 3.0, 4.0, 5.0, 6.0];
+/// let values1 = vec![1.0, 2.0, 4.0, 5.0];
+/// let values2 = vec![2.0, 3.0, 7.0, 9.0];
 /// let result = calculate_diffs(&values1, &values2, true);
-/// assert_eq!(result, vec![1.0, 1.0, 1.0, 1.0, 1.0]);
+/// assert_eq!(result, vec![1.0, 1.0, 3.0, 4.0]);
+/// let result = calculate_diffs(&values1, &values2, false);
+/// assert_eq!(result, vec![1.0, 0.5, 0.75, 0.8]);
 /// ```
 pub fn calculate_diffs(values1: &Vec<f64>, values2: &Vec<f64>, absolute: bool) -> Vec<f64> {
     assert!(!values1.is_empty(), "values1 must not be empty");
@@ -73,7 +75,7 @@ pub fn calculate_diffs(values1: &Vec<f64>, values2: &Vec<f64>, absolute: bool) -
         values1
             .iter()
             .zip(values2.iter())
-            .map(|(&x, &y)| (y - x) / (x + y))
+            .map(|(&x, &y)| (y - x) / x)
             .collect()
     }
 }
@@ -98,23 +100,17 @@ mod tests {
 
     #[test]
     fn test_calculate_diffs_absolute() {
-        let values1 = vec![1.0, 2.0, 3.0, 4.0, 5.0];
-        let values2 = vec![2.0, 3.0, 4.0, 5.0, 6.0];
-        let expected = vec![1.0, 1.0, 1.0, 1.0, 1.0]; // Differences between values2 and values1
+        let values1 = vec![1.0, 2.0, 4.0, 5.0];
+        let values2 = vec![2.0, 3.0, 7.0, 9.0];
+        let expected = vec![1.0, 1.0, 3.0, 4.0]; // values2 - values1
         assert_eq!(calculate_diffs(&values1, &values2, true), expected);
     }
 
     #[test]
     fn test_calculate_diffs_relative() {
-        let values1 = vec![1.0, 2.0, 3.0, 4.0, 5.0];
-        let values2 = vec![2.0, 3.0, 4.0, 5.0, 6.0];
-        let expected = vec![
-            0.3333333333333333,
-            0.2,
-            0.14285714285714285,
-            0.1111111111111111,
-            0.09090909090909091,
-        ]; // Relative differences between values2 and values1
+        let values1 = vec![1.0, 2.0, 4.0, 5.0];
+        let values2 = vec![2.0, 3.0, 7.0, 9.0];
+        let expected = vec![1.0, 0.5, 0.75, 0.8]; // (values2 - values1) / values1
         assert_eq!(calculate_diffs(&values1, &values2, false), expected);
     }
 }
