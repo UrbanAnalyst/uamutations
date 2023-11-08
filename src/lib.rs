@@ -8,22 +8,21 @@ pub mod vector_fns;
 /// This is the main function, which reads data from two JSON files, calculates absolute and
 /// relative differences between the two sets of data, and writes the results to an output file.
 ///
-/// # Files
+/// # Arguments
 ///
-/// * `FNAME1` and `FNAME2` - Paths to the input JSON files.
-/// * `OUTFILENAME` - Path to the output file.
-///
-/// # Variables
-///
-/// * `VARNAME` - The name of the variable to be read from the JSON files.
-/// * `NENTRIES` - The number of entries to be read from the JSON files.
+/// * `fname1` - Path to local JSON file with data which are to be mutated.
+/// * `fname2` - Path to local JSON file with data of mutation target towards which first data are
+/// to be mutated.
+/// * `varname` - Name of variable in both `fname1` and `fname2` to be mutated.
+/// * `nentries` - The number of entries to be read from the JSON files.
+/// * `outfilename` - Path to local output file.
 ///
 /// # Process
 ///
-/// 1. Reads the variable specified by `VARNAME` from the files `FNAME1` and `FNAME2`.
+/// 1. Reads the variable specified by `varname` from the files `fname1` and `fname2`.
 /// 2. Calculates the absolute and relative differences between the two sets of data.
 /// 3. Orders the relative differences in descending order.
-/// 4. Writes the original data, the differences, and the ordering index to `OUTFILENAME`.
+/// 4. Writes the original data, the differences, and the ordering index to `outfilename`.
 ///
 /// # Panics
 ///
