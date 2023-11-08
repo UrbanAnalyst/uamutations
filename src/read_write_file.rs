@@ -4,6 +4,33 @@ use std::fs::File;
 use std::io::BufReader;
 use std::io::Write;
 
+/// Reads a JSON file and returns a tuple of two vectors: one for the indices and one for the values.
+///
+/// # Arguments
+///
+/// * `filename` - The path to the JSON file to be read.
+/// * `varname` - The name of the variable to be read from the JSON file.
+/// * `nentries` - The number of entries to be read from the JSON file.
+///
+/// # Panics
+///
+/// This function will panic if `nentries` is less than or equal to zero, or if the file cannot be read.
+///
+/// # Returns
+///
+/// A tuple of two vectors:
+/// * The first vector contains the indices of the sorted values.
+/// * The second vector contains the sorted values.
+///
+/// # Example
+///
+/// ```
+/// let filename = "./test_resources/dat1.json";
+/// let varname = "transport";
+/// let nentries = 10;
+/// let (index, values) = readfile(filename, varname, nentries);
+/// ```
+
 pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, Vec<f64>) {
     assert!(nentries > 0, "nentries must be greater than zero");
 
@@ -48,6 +75,18 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
     (index, values)
 }
 
+/// `WriteData` is a struct that holds the data to be written to a file.
+///
+/// It contains two sets of values (`values1` and `values2`), their absolute and relative differences (`diffs_abs` and `diffs_rel`), and their original indices (`index1` and `index2`).
+///
+/// # Fields
+///
+/// * `values1` - The first set of values.
+/// * `values2` - The second set of values.
+/// * `diffs_abs` - The absolute differences between `values1` and `values2`.
+/// * `diffs_rel` - The relative differences between `values1` and `values2`.
+/// * `index1` - The original indices of `values1`.
+/// * `index2` - The original indices of `values2`.
 pub struct WriteData {
     pub values1: Vec<f64>,
     pub values2: Vec<f64>,
@@ -57,6 +96,19 @@ pub struct WriteData {
     pub index2: Vec<usize>,
 }
 
+/// Writes the data contained in a `WriteData` instance to a file.
+///
+/// The function takes a reference to a `WriteData` instance, a reference to a vector of ordering indices, and a filename as arguments. It writes the data to the file in the following format: `values1`, `values2`, `diffs_abs`, `diffs_rel`, `index1`, `index2`, `ord_index`.
+///
+/// # Arguments
+///
+/// * `data` - A reference to a `WriteData` instance containing the data to be written.
+/// * `ord_index` - A reference to a vector of ordering indices.
+/// * `filename` - The name of the file to which the data will be written.
+///
+/// # Panics
+///
+/// This function will panic if it fails to create or write to the file.
 pub fn write_file(data: &WriteData, ord_index: &Vec<usize>, filename: &str) {
     const ERR_MSG: &str = "All input vectors must have the same length";
     let len = data.values1.len();

@@ -1,3 +1,17 @@
+/// Returns a vector of indices that would sort the input vector in descending order.
+///
+/// # Arguments
+///
+/// * `vals` - A slice of f64 values to be sorted.
+/// * `is_abs` - A boolean indicating whether to sort the absolute values.
+///
+/// # Example
+///
+/// ```
+/// let vals = vec![1.0, -2.0, 3.0, -4.0, 5.0];
+/// let result = get_ordering_index(&vals, false);
+/// assert_eq!(result, vec![4, 2, 0, 1, 3]);
+/// ```
 pub fn get_ordering_index(vals: &[f64], is_abs: bool) -> Vec<usize> {
     let mut pairs: Vec<_> = vals.iter().enumerate().collect();
 
@@ -12,6 +26,26 @@ pub fn get_ordering_index(vals: &[f64], is_abs: bool) -> Vec<usize> {
     index
 }
 
+/// Calculates the difference between two vectors of f64 values.
+///
+/// # Arguments
+///
+/// * `values1` - The first vector of f64 values.
+/// * `values2` - The second vector of f64 values.
+/// * `absolute` - A boolean indicating whether to calculate absolute differences.
+///
+/// # Panics
+///
+/// This function will panic if `values1` is empty or if `values1` and `values2` have different lengths.
+///
+/// # Example
+///
+/// ```
+/// let values1 = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+/// let values2 = vec![2.0, 3.0, 4.0, 5.0, 6.0];
+/// let result = calculate_diffs(&values1, &values2, true);
+/// assert_eq!(result, vec![1.0, 1.0, 1.0, 1.0, 1.0]);
+/// ```
 pub fn calculate_diffs(values1: &Vec<f64>, values2: &Vec<f64>, absolute: bool) -> Vec<f64> {
     assert!(!values1.is_empty(), "values1 must not be empty");
     assert_eq!(
