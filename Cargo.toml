@@ -5,6 +5,7 @@ authors = ["Mark Padgham <mark.padgham@email.com>"]
 edition = "2021"
 repository = "https://github.com/UrbanAnalyst/uamutations"
 license = "MIT"
+description = "Implementation of the mutation algorithm for Urban Analyst."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
