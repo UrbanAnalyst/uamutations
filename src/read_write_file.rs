@@ -59,14 +59,24 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
         }
     }
 
-    let mut values: Vec<_> = values.into_iter().enumerate().collect();
-    values.sort_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap());
+    let mut pairs: Vec<_> = values.into_iter().enumerate().collect();
+    pairs.sort_unstable_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap());
 
-    let index: Vec<usize> = values.iter().map(|&(index, _)| index).collect();
-    let values: Vec<f64> = values.iter().map(|&(_, value)| value).collect();
+    let index: Vec<usize> = pairs.iter().map(|&(index, _)| index).collect();
+    let values: Vec<f64> = pairs.iter().map(|&(_, value)| value).collect();
+
+    let mut original_order: Vec<usize> = vec![0; values.len()];
+    for (i, &idx) in index.iter().enumerate() {
+        original_order[idx] = i;
+    }
 
     assert_eq!(
         index.len(),
+        values.len(),
+        "The lengths of index and values are not equal"
+    );
+    assert_eq!(
+        original_order.len(),
         values.len(),
         "The lengths of index and values are not equal"
     );
@@ -75,7 +85,7 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
         "values are not sorted"
     );
 
-    (index, values)
+    (original_order, values)
 }
 
 /// `WriteData` is a struct that holds the data needed for the [`write_file`] function which writes
