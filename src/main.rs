@@ -4,6 +4,9 @@
 
 extern crate uamutations;
 
+/// Entry point for the Urban Analyst mutation algorithm.
+///
+/// This exists only to locally call and run the library.
 fn main() {
     uamutations::uamutate();
 }

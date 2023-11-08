@@ -12,10 +12,8 @@ const FNAME2: &str = "./test_resources/dat2.json";
 const VARNAME: &str = "bike_index";
 const OUTFILENAME: &str = "output.txt";
 
-/// Entry point for the Urban Analyst mutation algorithm.
-///
-/// This function reads data from two JSON files, calculates absolute and relative differences
-/// between the two sets of data, and writes the results to an output file.
+/// This is the main function, which reads data from two JSON files, calculates absolute and
+/// relative differences between the two sets of data, and writes the results to an output file.
 ///
 /// # Files
 ///
