@@ -53,3 +53,44 @@ pub fn uamutate(fname1: &str, fname2: &str, varname: &str, nentries: usize, outf
 
     read_write_file::write_file(&write_data, outfilename);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use std::io::BufReader;
+    use std::io::prelude::*;
+    use std::path::Path;
+
+    #[test]
+    fn test_uamutate() {
+        // Define the input parameters for the function
+        let filename1 = "./test_resources/dat1.json";
+        let filename2 = "./test_resources/dat2.json";
+        let varname = "bike_index";
+        let nentries = 10;
+        let outfilename = "test_output.txt";
+
+        // Call the function with the test parameters
+        uamutate(filename1, filename2, varname, nentries, outfilename);
+
+        // Check that the output file exists
+        assert!(Path::new(outfilename).exists());
+
+        // Open the file in read-only mode, returns `io::Result<File>`
+        let file = fs::File::open(outfilename).expect("unable to open file");
+        let reader = BufReader::new(file);
+
+        // Read all lines into a vector
+        let lines: Vec<_> = reader.lines().collect::<Result<_, _>>().expect("unable to read lines");
+
+        // Check that the header contains the expected columns
+        let header = &lines[0];
+        assert!(header.contains("values"));
+        assert!(header.contains("diffs"));
+        assert!(header.contains("groups"));
+
+        // Check that the file has the expected number of lines (adding 1 for the header)
+        assert_eq!(lines.len(), nentries + 1);
+    }
+}
