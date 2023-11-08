@@ -24,6 +24,15 @@ pub mod vector_fns;
 /// 3. Orders the relative differences in descending order.
 /// 4. Writes the original data, the differences, and the ordering index to `outfilename`.
 ///
+/// The following seven vectors of equal length are written to the output file:
+/// 1. values1: Ordered vector of values which are to be changed = "from" values
+/// 2. index1: Index mapping back to original order of 'values1'
+/// 3. values2: Ordered vector of values to be mutated towards = "to" values
+/// 4. index2: Index mapping back to original order of 'values2'
+/// 5. diffs_abs: Vector of absolute differences between 'values1' and 'values2'
+/// 6. diffs_rel: Vector of relative differences between 'values1' and 'values2'
+/// 7. ord_index: Index mapping order of 'diffs_rel' back onto original order of 'values1'.
+///
 /// # Panics
 ///
 /// This function will panic if the input files cannot be read, or if the output file cannot be written.
@@ -35,15 +44,6 @@ pub fn uamutate(fname1: &str, fname2: &str, varname: &str, nentries: usize, outf
     let diffs_rel = vector_fns::calculate_diffs(&values1, &values2, false);
 
     let ord_index = vector_fns::get_ordering_index(&diffs_rel, true); // true for is_abs
-
-    // That creates the following 7 vectors of equal length:
-    // 1. values1: Ordered vector of values which are to be changed = "from" values
-    // 2. index1: Index mapping back to original order of 'values1'
-    // 3. values2: Ordered vector of values to be mutated towards = "to" values
-    // 4. index2: Index mapping back to original order of 'values2'
-    // 5. diffs_abs: Vector of absolute differences between 'values1' and 'values2'
-    // 6. diffs_rel: Vector of relative differences between 'values1' and 'values2'
-    // 7. ord_index: Index mapping order of 'diffs_rel' back onto original order of 'values1'.
 
     let write_data = read_write_file::WriteData {
         values1,
