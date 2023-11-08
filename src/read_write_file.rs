@@ -143,7 +143,12 @@ pub fn write_file(data: &WriteData, filename: &str) {
     // Write the header line
     writeln!(file, "values, diffs, groups").expect("Unable to write to file");
 
-    for ((v, d), g) in data.values.iter().zip(data.diffs.iter()).zip(data.groups.iter()) {
+    for ((v, d), g) in data
+        .values
+        .iter()
+        .zip(data.diffs.iter())
+        .zip(data.groups.iter())
+    {
         writeln!(file, "{}, {}, {}", v, d, g).expect("Unable to write to file");
     }
 }

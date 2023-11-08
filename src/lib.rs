@@ -45,7 +45,11 @@ pub fn uamutate(fname1: &str, fname2: &str, varname: &str, nentries: usize, outf
     let values: Vec<_> = index1.iter().map(|&i| values1[i]).collect();
     let groups: Vec<_> = index1.iter().map(|&i| _groups1[i]).collect();
 
-    let write_data = read_write_file::WriteData { values, diffs, groups };
+    let write_data = read_write_file::WriteData {
+        values,
+        diffs,
+        groups,
+    };
 
     read_write_file::write_file(&write_data, outfilename);
 }
