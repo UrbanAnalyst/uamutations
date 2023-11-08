@@ -58,8 +58,8 @@ pub fn uamutate(fname1: &str, fname2: &str, varname: &str, nentries: usize, outf
 mod tests {
     use super::*;
     use std::fs;
-    use std::io::BufReader;
     use std::io::prelude::*;
+    use std::io::BufReader;
     use std::path::Path;
 
     #[test]
@@ -82,7 +82,10 @@ mod tests {
         let reader = BufReader::new(file);
 
         // Read all lines into a vector
-        let lines: Vec<_> = reader.lines().collect::<Result<_, _>>().expect("unable to read lines");
+        let lines: Vec<_> = reader
+            .lines()
+            .collect::<Result<_, _>>()
+            .expect("unable to read lines");
 
         // Check that the header contains the expected columns
         let header = &lines[0];
