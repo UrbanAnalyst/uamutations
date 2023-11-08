@@ -39,6 +39,12 @@ pub fn get_ordering_index(vals: &[f64], is_abs: bool) -> Vec<usize> {
 /// This function will panic if `values1` is empty or if `values1` and `values2` have different
 /// lengths.
 ///
+/// # Returns
+///
+/// A vector of f64 values representing the sequential differences between `values1` and `values2`.
+/// If `absolute` is true, the differences are absolute values. Otherwise, the differences are
+/// differences relative to `values1`.
+///
 /// # Example
 ///
 /// ```
