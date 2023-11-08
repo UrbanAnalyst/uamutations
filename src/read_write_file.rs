@@ -4,7 +4,8 @@ use std::fs::File;
 use std::io::BufReader;
 use std::io::Write;
 
-/// Reads a JSON file and returns a tuple of two vectors: one for the indices and one for the values.
+/// Reads a JSON file and returns a tuple of two vectors: one for the indices and one for the
+/// values.
 ///
 /// # Arguments
 ///
@@ -14,7 +15,8 @@ use std::io::Write;
 ///
 /// # Panics
 ///
-/// This function will panic if `nentries` is less than or equal to zero, or if the file cannot be read.
+/// This function will panic if `nentries` is less than or equal to zero, or if the file cannot be
+/// read.
 ///
 /// # Returns
 ///
@@ -77,16 +79,17 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
 
 /// `WriteData` is a struct that holds the data to be written to a file.
 ///
-/// It contains two sets of values (`values1` and `values2`), their absolute and relative differences (`diffs_abs` and `diffs_rel`), and their original indices (`index1` and `index2`).
+/// It contains two sets of values (`values1` and `values2`), their absolute and relative
+/// differences (`diffs_abs` and `diffs_rel`), and their original indices (`index1` and `index2`).
 ///
 /// # Fields
 ///
-/// * `values1` - The first set of values.
-/// * `values2` - The second set of values.
-/// * `diffs_abs` - The absolute differences between `values1` and `values2`.
-/// * `diffs_rel` - The relative differences between `values1` and `values2`.
-/// * `index1` - The original indices of `values1`.
-/// * `index2` - The original indices of `values2`.
+/// * `values1` - Ordered vector of values which are to be changed = "from" values
+/// * `index1` - Index mapping back to original order of 'values1'
+/// * `values2` - Ordered vector of values to be mutated towards = "to" values
+/// * `index2` - Index mapping back to original order of 'values2'
+/// * `diffs_abs` - Vector of absolute differences between 'values1' and 'values2'
+/// * `diffs_rel` - Vector of relative differences between 'values1' and 'values2'
 pub struct WriteData {
     pub values1: Vec<f64>,
     pub values2: Vec<f64>,
@@ -98,12 +101,15 @@ pub struct WriteData {
 
 /// Writes the data contained in a `WriteData` instance to a file.
 ///
-/// The function takes a reference to a `WriteData` instance, a reference to a vector of ordering indices, and a filename as arguments. It writes the data to the file in the following format: `values1`, `values2`, `diffs_abs`, `diffs_rel`, `index1`, `index2`, `ord_index`.
+/// The function takes a reference to a `WriteData` instance, a reference to a vector of ordering
+/// indices, and a filename as arguments. It writes the data to the file in the following format:
+/// `values1`, `values2`, `diffs_abs`, `diffs_rel`, `index1`, `index2`, `ord_index`.
 ///
 /// # Arguments
 ///
-/// * `data` - A reference to a `WriteData` instance containing the data to be written.
-/// * `ord_index` - A reference to a vector of ordering indices.
+/// * `data` - A reference to a `WriteData` instance containing the data described in the struct.
+/// * `ord_index` - A reference to a vector of ordering indices mapping order of 'diffs_rel' back
+/// onto original order of 'values1'.
 /// * `filename` - The name of the file to which the data will be written.
 ///
 /// # Panics

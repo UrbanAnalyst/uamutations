@@ -3,7 +3,7 @@
 /// # Arguments
 ///
 /// * `vals` - A slice of f64 values to be sorted.
-/// * `is_abs` - A boolean indicating whether to sort the absolute values.
+/// * `is_abs` - A boolean indicating whether sorting should be based on absolute values.
 ///
 /// # Example
 ///
@@ -26,7 +26,7 @@ pub fn get_ordering_index(vals: &[f64], is_abs: bool) -> Vec<usize> {
     index
 }
 
-/// Calculates the difference between two vectors of f64 values.
+/// Calculates a vector of sequential difference between two vectors of f64 values.
 ///
 /// # Arguments
 ///
@@ -36,7 +36,8 @@ pub fn get_ordering_index(vals: &[f64], is_abs: bool) -> Vec<usize> {
 ///
 /// # Panics
 ///
-/// This function will panic if `values1` is empty or if `values1` and `values2` have different lengths.
+/// This function will panic if `values1` is empty or if `values1` and `values2` have different
+/// lengths.
 ///
 /// # Example
 ///
