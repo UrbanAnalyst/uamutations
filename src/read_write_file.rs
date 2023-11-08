@@ -77,7 +77,8 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
     (index, values)
 }
 
-/// `WriteData` is a struct that holds the data to be written to a file.
+/// `WriteData` is a struct that holds the data needed for the [`write_file`] function which writes
+/// data to a local file.
 ///
 /// It contains two sets of values (`values1` and `values2`), their absolute and relative
 /// differences (`diffs_abs` and `diffs_rel`), and their original indices (`index1` and `index2`).
@@ -90,6 +91,8 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
 /// * `index2` - Index mapping back to original order of 'values2'
 /// * `diffs_abs` - Vector of absolute differences between 'values1' and 'values2'
 /// * `diffs_rel` - Vector of relative differences between 'values1' and 'values2'
+///
+/// [`write_file`]: fn.write_file.html
 pub struct WriteData {
     pub values1: Vec<f64>,
     pub values2: Vec<f64>,
@@ -99,22 +102,21 @@ pub struct WriteData {
     pub index2: Vec<usize>,
 }
 
-/// Writes the data contained in a `WriteData` instance to a file.
+/// Writes the data contained in a [`WriteData`] instance plus one additional vector to a file.
 ///
-/// The function takes a reference to a `WriteData` instance, a reference to a vector of ordering
-/// indices, and a filename as arguments. It writes the data to the file in the following format:
-/// `values1`, `values2`, `diffs_abs`, `diffs_rel`, `index1`, `index2`, `ord_index`.
+/// The function takes a reference to a [`WriteData`] instance, a reference to a vector of ordering indices, and a filename as arguments. It writes the data to the file in the following format: `values1`, `values2`, `diffs_abs`, `diffs_rel`, `index1`, `index2`, `ord_index`.
 ///
 /// # Arguments
 ///
-/// * `data` - A reference to a `WriteData` instance containing the data described in the struct.
-/// * `ord_index` - A reference to a vector of ordering indices mapping order of 'diffs_rel' back
-/// onto original order of 'values1'.
+/// * `data` - A reference to a [`WriteData`] instance containing the data to be written.
+/// * `ord_index` - A reference to a vector of ordering indices.
 /// * `filename` - The name of the file to which the data will be written.
 ///
 /// # Panics
 ///
 /// This function will panic if it fails to create or write to the file.
+///
+/// [`WriteData`]: struct.WriteData.html
 pub fn write_file(data: &WriteData, ord_index: &Vec<usize>, filename: &str) {
     const ERR_MSG: &str = "All input vectors must have the same length";
     let len = data.values1.len();
