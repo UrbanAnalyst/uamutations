@@ -27,6 +27,7 @@ use std::io::Write;
 /// # Example
 ///
 /// ```
+/// use uamutations::read_write_file::readfile;
 /// let filename = "./test_resources/dat1.json";
 /// let varname = "transport";
 /// let nentries = 10;

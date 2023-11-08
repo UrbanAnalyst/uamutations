@@ -8,6 +8,7 @@
 /// # Example
 ///
 /// ```
+/// use uamutations::vector_fns::get_ordering_index;
 /// let vals = vec![1.0, -2.0, 3.0, -4.0, 5.0];
 /// let result = get_ordering_index(&vals, false);
 /// assert_eq!(result, vec![4, 2, 0, 1, 3]);
@@ -48,6 +49,7 @@ pub fn get_ordering_index(vals: &[f64], is_abs: bool) -> Vec<usize> {
 /// # Example
 ///
 /// ```
+/// use uamutations::vector_fns::calculate_diffs;
 /// let values1 = vec![1.0, 2.0, 4.0, 5.0];
 /// let values2 = vec![2.0, 3.0, 7.0, 9.0];
 /// let result = calculate_diffs(&values1, &values2, true);
