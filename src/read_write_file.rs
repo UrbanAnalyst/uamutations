@@ -86,31 +86,23 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
 ///
 /// # Fields
 ///
-/// * `values1` - Ordered vector of values which are to be changed = "from" values
-/// * `index1` - Index mapping back to original order of 'values1'
-/// * `values2` - Ordered vector of values to be mutated towards = "to" values
-/// * `index2` - Index mapping back to original order of 'values2'
-/// * `diffs_abs` - Vector of absolute differences between 'values1' and 'values2'
-/// * `diffs_rel` - Vector of relative differences between 'values1' and 'values2'
+/// * `values` - Vector of values which are to be mutated, in original order.
+/// * `diffs` - Correponding vector of relative differences following mutation.
 ///
 /// [`write_file`]: fn.write_file.html
 pub struct WriteData {
-    pub values1: Vec<f64>,
-    pub values2: Vec<f64>,
-    pub diffs_abs: Vec<f64>,
-    pub diffs_rel: Vec<f64>,
-    pub index1: Vec<usize>,
-    pub index2: Vec<usize>,
+    pub values: Vec<f64>,
+    pub diffs: Vec<f64>,
 }
 
 /// Writes the data contained in a [`WriteData`] instance plus one additional vector to a file.
 ///
-/// The function takes a reference to a [`WriteData`] instance, a reference to a vector of ordering indices, and a filename as arguments. It writes the data to the file in the following format: `values1`, `values2`, `diffs_abs`, `diffs_rel`, `index1`, `index2`, `ord_index`.
+/// The function takes a reference to a [`WriteData`] instance, a reference to a vector of ordering
+/// indices, and a filename as arguments.
 ///
 /// # Arguments
 ///
 /// * `data` - A reference to a [`WriteData`] instance containing the data to be written.
-/// * `ord_index` - A reference to a vector of ordering indices.
 /// * `filename` - The name of the file to which the data will be written.
 ///
 /// # Panics
@@ -118,41 +110,17 @@ pub struct WriteData {
 /// This function will panic if it fails to create or write to the file.
 ///
 /// [`WriteData`]: struct.WriteData.html
-pub fn write_file(data: &WriteData, ord_index: &Vec<usize>, filename: &str) {
+pub fn write_file(data: &WriteData, filename: &str) {
     const ERR_MSG: &str = "All input vectors must have the same length";
-    let len = data.values1.len();
-    assert_eq!(data.values2.len(), len, "{}", ERR_MSG);
-    assert_eq!(data.diffs_abs.len(), len, "{}", ERR_MSG);
-    assert_eq!(data.diffs_rel.len(), len, "{}", ERR_MSG);
-    assert_eq!(data.index1.len(), len, "{}", ERR_MSG);
-    assert_eq!(data.index2.len(), len, "{}", ERR_MSG);
-    assert_eq!(ord_index.len(), len, "{}", ERR_MSG);
+    assert_eq!(data.values.len(), data.diffs.len(), "{}", ERR_MSG);
 
     let mut file = File::create(filename).expect("Unable to create file");
 
     // Write the header line
-    writeln!(
-        file,
-        "values1, values2, diffs_abs, diffs_rel, index1, index2, order_index"
-    )
-    .expect("Unable to write to file");
+    writeln!(file, "values, diffs").expect("Unable to write to file");
 
-    for ((((((number1, number2), dabs), drel), i1), i2), oi) in data
-        .values1
-        .iter()
-        .zip(data.values2.iter())
-        .zip(data.diffs_abs.iter())
-        .zip(data.diffs_rel.iter())
-        .zip(data.index1.iter())
-        .zip(data.index2.iter())
-        .zip(ord_index.iter())
-    {
-        writeln!(
-            file,
-            "{}, {}, {}, {}, {}, {}, {}",
-            number1, number2, dabs, drel, i1, i2, oi
-        )
-        .expect("Unable to write to file");
+    for (v, d) in data.values.iter().zip(data.diffs.iter()) {
+        writeln!(file, "{}, {}", v, d).expect("Unable to write to file");
     }
 }
 
@@ -222,17 +190,12 @@ mod tests {
         use std::io::Read;
 
         let testdata = WriteData {
-            values1: vec![1.0, 2.0, 3.0],
-            values2: vec![4.0, 5.0, 6.0],
-            diffs_abs: vec![7.0, 8.0, 9.0],
-            diffs_rel: vec![10.0, 11.0, 12.0],
-            index1: vec![13, 14, 15],
-            index2: vec![16, 17, 18],
+            values: vec![1.0, 2.0, 3.0],
+            diffs: vec![4.0, 5.0, 6.0],
         };
-        let ord_index = vec![19, 20, 21];
         let filename = "/tmp/test_write_file.txt";
 
-        write_file(&testdata, &ord_index, filename);
+        write_file(&testdata, filename);
 
         let mut file = fs::File::open(filename).expect("Unable to open file");
         let mut contents = String::new();
@@ -240,10 +203,10 @@ mod tests {
             .expect("Unable to read file");
 
         let expected_contents = "\
-            values1, values2, diffs_abs, diffs_rel, index1, index2, order_index\n\
-            1, 4, 7, 10, 13, 16, 19\n\
-            2, 5, 8, 11, 14, 17, 20\n\
-            3, 6, 9, 12, 15, 18, 21\n";
+            values, diffs\n\
+            1, 4\n\
+            2, 5\n\
+            3, 6\n";
 
         assert_eq!(contents, expected_contents);
     }

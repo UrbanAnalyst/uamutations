@@ -38,21 +38,17 @@ pub mod vector_fns;
 /// This function will panic if the input files cannot be read, or if the output file cannot be written.
 pub fn uamutate(fname1: &str, fname2: &str, varname: &str, nentries: usize, outfilename: &str) {
     let (index1, values1) = read_write_file::readfile(fname1, varname, nentries);
-    let (index2, values2) = read_write_file::readfile(fname2, varname, nentries);
+    let (_index2, values2) = read_write_file::readfile(fname2, varname, nentries);
+    // The values are then sorted in in increasing order, and the indices map back to the original
+    // order. The following line then calculates successive differences between the two sets of
+    // values, where `false` is for the `absolute` parameter, so that differences are calculated
+    // relative to values1.
+    let diffs_sorted = vector_fns::calculate_diffs(&values1, &values2, false);
+    // Then map those diffs back onto the original order of `values1`:
+    let diffs: Vec<_> = index1.iter().map(|&i| diffs_sorted[i]).collect();
+    let values: Vec<_> = index1.iter().map(|&i| values1[i]).collect();
 
-    let diffs_abs = vector_fns::calculate_diffs(&values1, &values2, true);
-    let diffs_rel = vector_fns::calculate_diffs(&values1, &values2, false);
+    let write_data = read_write_file::WriteData { values, diffs };
 
-    let ord_index = vector_fns::get_ordering_index(&diffs_rel, true); // true for is_abs
-
-    let write_data = read_write_file::WriteData {
-        values1,
-        values2,
-        diffs_abs,
-        diffs_rel,
-        index1,
-        index2,
-    };
-
-    read_write_file::write_file(&write_data, &ord_index, outfilename);
+    read_write_file::write_file(&write_data, outfilename);
 }
