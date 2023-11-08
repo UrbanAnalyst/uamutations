@@ -34,7 +34,7 @@ use std::io::Write;
 /// let (index, values) = readfile(filename, varname, nentries);
 /// ```
 
-pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, Vec<f64>) {
+pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, Vec<f64>, Vec<usize>) {
     assert!(nentries > 0, "nentries must be greater than zero");
 
     let file = File::open(filename).unwrap();
@@ -43,6 +43,8 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
     let json: Value = serde_json::from_reader(reader).unwrap();
 
     let mut values = Vec::new();
+    let mut city_group = Vec::new();
+    let city_group_col = "index";
 
     if let Value::Array(array) = &json {
         for item in array {
@@ -53,6 +55,11 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
                 if let Some(Value::Number(number)) = map.get(varname) {
                     if let Some(number) = number.as_f64() {
                         values.push(number);
+                    }
+                }
+                if let Some(Value::Number(number)) = map.get(city_group_col) {
+                    if let Some(number) = number.as_f64() {
+                        city_group.push(number as usize);
                     }
                 }
             }
@@ -66,8 +73,10 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
     let values: Vec<f64> = pairs.iter().map(|&(_, value)| value).collect();
 
     let mut original_order: Vec<usize> = vec![0; values.len()];
+    let mut groups: Vec<usize> = vec![0; values.len()];
     for (i, &idx) in index.iter().enumerate() {
         original_order[idx] = i;
+        groups[idx] = city_group[i];
     }
 
     assert_eq!(
@@ -85,7 +94,7 @@ pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, 
         "values are not sorted"
     );
 
-    (original_order, values)
+    (original_order, values, groups)
 }
 
 /// `WriteData` is a struct that holds the data needed for the [`write_file`] function which writes

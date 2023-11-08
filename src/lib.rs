@@ -32,8 +32,9 @@ pub mod vector_fns;
 ///
 /// This function will panic if the input files cannot be read, or if the output file cannot be written.
 pub fn uamutate(fname1: &str, fname2: &str, varname: &str, nentries: usize, outfilename: &str) {
-    let (index1, values1) = read_write_file::readfile(fname1, varname, nentries);
-    let (_index2, values2) = read_write_file::readfile(fname2, varname, nentries);
+    let (index1, values1, _groups1) = read_write_file::readfile(fname1, varname, nentries);
+    let (_index2, values2, _groups2) = read_write_file::readfile(fname2, varname, nentries);
+
     // The values are then sorted in in increasing order, and the indices map back to the original
     // order. The following line then calculates successive differences between the two sets of
     // values, where `false` is for the `absolute` parameter, so that differences are calculated
