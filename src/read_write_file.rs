@@ -50,6 +50,8 @@ pub fn readfile(
     let mut city_group = Vec::new();
     let city_group_col = "index";
 
+    let mut var_exists = false;
+
     if let Value::Array(array) = &json {
         for item in array {
             if values.len() >= nentries {
@@ -57,6 +59,7 @@ pub fn readfile(
             }
             if let Value::Object(map) = item {
                 if let Some(Value::Number(number)) = map.get(varname) {
+                    var_exists = true;
                     if let Some(number) = number.as_f64() {
                         values.push(number);
                     }
@@ -69,6 +72,12 @@ pub fn readfile(
             }
         }
     }
+
+    assert!(
+        var_exists,
+        "Variable {} does not exist in the JSON file",
+        varname
+    );
 
     let mut pairs: Vec<_> = values.into_iter().enumerate().collect();
     pairs.sort_unstable_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap());
@@ -168,6 +177,19 @@ mod tests {
         let nentries = 0;
         let result = std::panic::catch_unwind(|| {
             readfile(filename1, varname, nentries);
+        });
+        assert!(result.is_err(), "Expected an error when nentries <= 0");
+
+        let result = std::panic::catch_unwind(|| {
+            readfile(filename1, "nonexistent_var", nentries);
+        });
+        assert!(
+            result.is_err(),
+            "Expected an error when varname does not exist"
+        );
+
+        let result = std::panic::catch_unwind(|| {
+            readfile(filename1, varname, 0);
         });
         assert!(result.is_err(), "Expected an error when nentries <= 0");
 
