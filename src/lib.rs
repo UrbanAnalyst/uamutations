@@ -69,7 +69,7 @@ mod tests {
         let filename2 = "./test_resources/dat2.json";
         let varname = "bike_index";
         let nentries = 10;
-        let outfilename = "test_output.txt";
+        let outfilename = "/tmp/test_output.txt";
 
         // Call the function with the test parameters
         uamutate(filename1, filename2, varname, nentries, outfilename);
