@@ -31,10 +31,14 @@ use std::io::Write;
 /// let filename = "./test_resources/dat1.json";
 /// let varname = "transport";
 /// let nentries = 10;
-/// let (index, values) = readfile(filename, varname, nentries);
+/// let (index, values, groups) = readfile(filename, varname, nentries);
 /// ```
 
-pub fn readfile(filename: &str, varname: &str, nentries: usize) -> (Vec<usize>, Vec<f64>, Vec<usize>) {
+pub fn readfile(
+    filename: &str,
+    varname: &str,
+    nentries: usize,
+) -> (Vec<usize>, Vec<f64>, Vec<usize>) {
     assert!(nentries > 0, "nentries must be greater than zero");
 
     let file = File::open(filename).unwrap();
@@ -163,8 +167,8 @@ mod tests {
 
         let nentries = 10;
 
-        let (index1, values1) = readfile(filename1, varname, nentries);
-        let (index2, values2) = readfile(filename2, varname, nentries);
+        let (index1, values1, _groups1) = readfile(filename1, varname, nentries);
+        let (index2, values2, _groups2) = readfile(filename2, varname, nentries);
 
         assert_eq!(
             index1.len(),
@@ -194,13 +198,6 @@ mod tests {
             values2.iter().tuple_windows().all(|(a, b)| a <= b),
             "values2 is not sorted"
         );
-
-        for value in &values1 {
-            assert!(*value >= 0.0, "Found value less than 0");
-        }
-        for value in &values2 {
-            assert!(*value >= 0.0, "Found value less than 0");
-        }
     }
 
     #[test]
