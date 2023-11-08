@@ -129,6 +129,13 @@ pub fn write_file(data: &WriteData, ord_index: &Vec<usize>, filename: &str) {
 
     let mut file = File::create(filename).expect("Unable to create file");
 
+    // Write the header line
+    writeln!(
+        file,
+        "values1, values2, diffs_abs, diffs_rel, index1, index2, order_index"
+    )
+    .expect("Unable to write to file");
+
     for ((((((number1, number2), dabs), drel), i1), i2), oi) in data
         .values1
         .iter()
@@ -232,6 +239,7 @@ mod tests {
             .expect("Unable to read file");
 
         let expected_contents = "\
+            values1, values2, diffs_abs, diffs_rel, index1, index2, order_index\n\
             1, 4, 7, 10, 13, 16, 19\n\
             2, 5, 8, 11, 14, 17, 20\n\
             3, 6, 9, 12, 15, 18, 21\n";
