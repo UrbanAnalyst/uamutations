@@ -142,6 +142,7 @@ mod tests {
         let filename2 = "./test_resources/dat2.json";
         let varname = "transport";
 
+        // -------- test panic conditions --------
         // Test when nentries <= 0
         let nentries = 0;
         let result = std::panic::catch_unwind(|| {
@@ -149,6 +150,7 @@ mod tests {
         });
         assert!(result.is_err(), "Expected an error when nentries <= 0");
 
+        // Test error when variables do not exist in JSON file
         let result = std::panic::catch_unwind(|| {
             readfile(filename1, "nonexistent_var", nentries);
         });
@@ -157,11 +159,13 @@ mod tests {
             "Expected an error when varname does not exist"
         );
 
+        // Test error when nentries == 0:
         let result = std::panic::catch_unwind(|| {
             readfile(filename1, varname, 0);
         });
         assert!(result.is_err(), "Expected an error when nentries <= 0");
 
+        // -------- test normal conditions and return values --------
         let nentries = 10;
 
         let (index1, values1, _groups1) = readfile(filename1, varname, nentries);
