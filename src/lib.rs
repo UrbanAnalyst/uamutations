@@ -32,7 +32,14 @@ pub mod vector_fns;
 /// # Panics
 ///
 /// This function will panic if the input files cannot be read, or if the output file cannot be written.
-pub fn uamutate(fname1: &str, fname2: &str, varname: &str, varextra: Vec<char>, nentries: usize, outfilename: &str) {
+pub fn uamutate(
+    fname1: &str,
+    fname2: &str,
+    varname: &str,
+    varextra: Vec<char>,
+    nentries: usize,
+    outfilename: &str,
+) {
     let (index1, values1, _groups1) = read_write_file::readfile(fname1, varname, nentries);
     let (_index2, values2, _groups2) = read_write_file::readfile(fname2, varname, nentries);
 
@@ -88,7 +95,14 @@ mod tests {
         let outfilename = "/tmp/test_output.txt";
 
         // Call the function with the test parameters
-        uamutate(filename1, filename2, varname, varextra.to_vec(), nentries, outfilename);
+        uamutate(
+            filename1,
+            filename2,
+            varname,
+            varextra.to_vec(),
+            nentries,
+            outfilename,
+        );
 
         // Check that the output file exists
         assert!(Path::new(outfilename).exists());
