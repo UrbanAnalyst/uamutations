@@ -49,7 +49,7 @@ pub fn uamutate(
     // order. The following line then calculates successive differences between the two sets of
     // values, where `false` is for the `absolute` parameter, so that differences are calculated
     // relative to values1.
-    let dists_sorted = vector_fns::calculate_dists(&values1[0], &values2[0], false);
+    let dists_sorted = vector_fns::calculate_dists(&values1, &values2, false);
     // Then map those dists back onto the original order of `values1`:
     let dists: Vec<_> = index1.iter().map(|&i| dists_sorted[i]).collect();
     // let values: Vec<_> = index1.iter().map(|&i| values1[i]).collect();

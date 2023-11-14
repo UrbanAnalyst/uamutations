@@ -21,33 +21,42 @@
 ///
 /// ```
 /// use uamutations::vector_fns::calculate_dists;
-/// let values1 = vec![1.0, 2.0, 4.0, 5.0];
-/// let values2 = vec![2.0, 3.0, 7.0, 9.0];
+/// let values1 = vec![vec![1.0, 2.0, 4.0, 5.0]];
+/// let values2 = vec![vec![2.0, 3.0, 7.0, 9.0]];
 /// let result = calculate_dists(&values1, &values2, true);
 /// assert_eq!(result, vec![1.0, 1.0, 3.0, 4.0]);
 /// let result = calculate_dists(&values1, &values2, false);
 /// assert_eq!(result, vec![1.0, 0.5, 0.75, 0.8]);
 /// ```
-pub fn calculate_dists(values1: &Vec<f64>, values2: &Vec<f64>, absolute: bool) -> Vec<f64> {
+pub fn calculate_dists(
+    values1: &Vec<Vec<f64>>,
+    values2: &Vec<Vec<f64>>,
+    absolute: bool,
+) -> Vec<f64> {
     assert!(!values1.is_empty(), "values1 must not be empty");
     assert_eq!(
         values1.len(),
         values2.len(),
         "values1 and values2 must have the same length"
     );
+    assert_eq!(
+        values1[0].len(),
+        values2[0].len(),
+        "Entries in values1 and values2 must have the same length"
+    );
 
     // Full calls for the two cases, because `if`/`else` clauses require same type, and the `map`
     // calls generate different types.
     if absolute {
-        values1
+        values1[0]
             .iter()
-            .zip(values2.iter())
+            .zip(values2[0].iter())
             .map(|(&x, &y)| y - x)
             .collect()
     } else {
-        values1
+        values1[0]
             .iter()
-            .zip(values2.iter())
+            .zip(values2[0].iter())
             .map(|(&x, &y)| (y - x) / x)
             .collect()
     }
@@ -102,16 +111,16 @@ mod tests {
 
     #[test]
     fn test_calculate_dists_absolute() {
-        let values1 = vec![1.0, 2.0, 4.0, 5.0];
-        let values2 = vec![2.0, 3.0, 7.0, 9.0];
+        let values1 = vec![vec![1.0, 2.0, 4.0, 5.0]];
+        let values2 = vec![vec![2.0, 3.0, 7.0, 9.0]];
         let expected = vec![1.0, 1.0, 3.0, 4.0]; // values2 - values1
         assert_eq!(calculate_dists(&values1, &values2, true), expected);
     }
 
     #[test]
     fn test_calculate_dists_relative() {
-        let values1 = vec![1.0, 2.0, 4.0, 5.0];
-        let values2 = vec![2.0, 3.0, 7.0, 9.0];
+        let values1 = vec![vec![1.0, 2.0, 4.0, 5.0]];
+        let values2 = vec![vec![2.0, 3.0, 7.0, 9.0]];
         let expected = vec![1.0, 0.5, 0.75, 0.8]; // (values2 - values1) / values1
         assert_eq!(calculate_dists(&values1, &values2, false), expected);
     }
