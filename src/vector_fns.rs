@@ -24,9 +24,12 @@
 /// let values1 = vec![vec![1.0, 2.0, 4.0, 5.0]];
 /// let values2 = vec![vec![2.0, 3.0, 7.0, 9.0]];
 /// let result = calculate_dists(&values1, &values2, true);
-/// assert_eq!(result, vec![1.0, 1.0, 3.0, 4.0]);
+/// // For each values1, result will be (v2 - v1) for closest values2. So closest value to v1[3] =
+/// // 4, for example, is v2 = 3, and (v2 - v1) = 3 - 4 = -1. Or v1[4] = 5, with closest of 3, and
+/// // 3 - 5 = -2.
+/// assert_eq!(result, vec![1.0, 0.0, -1.0, -2.0]);
 /// let result = calculate_dists(&values1, &values2, false);
-/// assert_eq!(result, vec![1.0, 0.5, 0.75, 0.8]);
+/// assert_eq!(result, vec![1.0, 0.0, -0.25, -0.4]);
 /// ```
 pub fn calculate_dists(
     values1: &Vec<Vec<f64>>,
@@ -65,35 +68,24 @@ pub fn calculate_dists(
         })
         .collect();
 
-    let _final_dists: Vec<_> = values1
+    // Then calculate final distances from each item in the first dimension of `values1` to the
+    // first dimension of `values2` of the item which is closest in the full multi-dimensional
+    // space.
+    let final_dists: Vec<_> = values1[0]
         .iter()
-        .map(|v1| {
-            v1.iter()
-                .enumerate()
-                .map(|(i, &x1)| {
-                    let (_, idx) = dists[i];
-                    let x2 = values2[0][idx];
-                    x1 - x2
-                })
-                .collect::<Vec<_>>()
+        .enumerate()
+        .map(|(i, &x1)| {
+            let (_, idx) = dists[i];
+            let x2 = values2[0][idx];
+            if absolute {
+                x2 - x1
+            } else {
+                (x2 - x1) / x1
+            }
         })
         .collect();
 
-    // Full calls for the two cases, because `if`/`else` clauses require same type, and the `map`
-    // calls generate different types.
-    if absolute {
-        values1[0]
-            .iter()
-            .zip(values2[0].iter())
-            .map(|(&x, &y)| y - x)
-            .collect()
-    } else {
-        values1[0]
-            .iter()
-            .zip(values2[0].iter())
-            .map(|(&x, &y)| (y - x) / x)
-            .collect()
-    }
+    final_dists
 }
 
 /// Returns a vector of indices that would sort the input vector in descending order.
@@ -147,7 +139,10 @@ mod tests {
     fn test_calculate_dists_absolute() {
         let values1 = vec![vec![1.0, 2.0, 4.0, 5.0]];
         let values2 = vec![vec![2.0, 3.0, 7.0, 9.0]];
-        let expected = vec![1.0, 1.0, 3.0, 4.0]; // values2 - values1
+        // For each values1, result will be (v2 - v1) for closest values2. So closest value to
+        // v1[3] = 4, for example, is v2 = 3, and (v2 - v1) = 3 - 4 = -1. Or v1[4] = 5, with
+        // closest of 3, and 3 - 5 = -2.
+        let expected = vec![1.0, 0.0, -1.0, -2.0]; // values2 - values1
         assert_eq!(calculate_dists(&values1, &values2, true), expected);
     }
 
@@ -155,7 +150,9 @@ mod tests {
     fn test_calculate_dists_relative() {
         let values1 = vec![vec![1.0, 2.0, 4.0, 5.0]];
         let values2 = vec![vec![2.0, 3.0, 7.0, 9.0]];
-        let expected = vec![1.0, 0.5, 0.75, 0.8]; // (values2 - values1) / values1
+        // Closest values are same as above, but calculated here as relative values, so -1 becomes
+        // -1/4, and -2 becomes -2/5.
+        let expected = vec![1.0, 0.0, -0.25, -0.4]; // (values2 - values1) / values1
         assert_eq!(calculate_dists(&values1, &values2, false), expected);
     }
 }
