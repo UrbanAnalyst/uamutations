@@ -10,7 +10,7 @@ use std::io::Write;
 /// # Arguments
 ///
 /// * `filename` - The path to the JSON file to be read.
-/// * `varname` - The name of the variable to be read from the JSON file.
+/// * `varnames` - The names of the variables to be read from the JSON file.
 /// * `nentries` - The number of entries to be read from the JSON file.
 ///
 /// # Panics
@@ -29,14 +29,14 @@ use std::io::Write;
 /// ```
 /// use uamutations::read_write_file::readfile;
 /// let filename = "./test_resources/dat1.json";
-/// let varname = vec!["transport".to_string()];
+/// let varnames = vec!["transport".to_string()];
 /// let nentries = 10;
-/// let (index, values, groups) = readfile(filename, &varname, nentries);
+/// let (index, values, groups) = readfile(filename, &varnames, nentries);
 /// ```
 
 pub fn readfile(
     filename: &str,
-    varname: &Vec<String>,
+    varnames: &Vec<String>,
     nentries: usize,
 ) -> (Vec<usize>, Vec<Vec<f64>>, Vec<usize>) {
     assert!(nentries > 0, "nentries must be greater than zero");
@@ -46,11 +46,11 @@ pub fn readfile(
 
     let json: Value = serde_json::from_reader(reader).unwrap();
 
-    let mut values = vec![Vec::new(); varname.len()];
+    let mut values = vec![Vec::new(); varnames.len()];
     let mut city_group = Vec::new();
     let city_group_col = "index";
 
-    let mut var_exists = vec![false; varname.len()];
+    let mut var_exists = vec![false; varnames.len()];
 
     if let Value::Array(array) = &json {
         for item in array {
@@ -58,7 +58,7 @@ pub fn readfile(
                 break;
             }
             if let Value::Object(map) = item {
-                for (i, var) in varname.iter().enumerate() {
+                for (i, var) in varnames.iter().enumerate() {
                     if let Some(Value::Number(number)) = map.get(var.as_str()) {
                         var_exists[i] = true;
                         if let Some(number) = number.as_f64() {
@@ -79,7 +79,7 @@ pub fn readfile(
         assert!(
             *exists,
             "Variable {} does not exist in the JSON file",
-            varname[i]
+            varnames[i]
         );
     }
 
@@ -87,7 +87,7 @@ pub fn readfile(
     pairs.sort_unstable_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap());
 
     let index: Vec<usize> = pairs.iter().map(|&(index, _)| index).collect();
-    let values: Vec<Vec<f64>> = varname
+    let values: Vec<Vec<f64>> = varnames
         .iter()
         .enumerate()
         .map(|(i, _)| {
@@ -152,13 +152,13 @@ mod tests {
     fn test_readfile() {
         let filename1 = "./test_resources/dat1.json";
         let filename2 = "./test_resources/dat2.json";
-        let varname = vec!["transport".to_string()];
+        let varnames = vec!["transport".to_string()];
 
         // -------- test panic conditions --------
         // Test when nentries <= 0
         let nentries = 0;
         let result = std::panic::catch_unwind(|| {
-            readfile(filename1, &varname, nentries);
+            readfile(filename1, &varnames, nentries);
         });
         assert!(result.is_err(), "Expected an error when nentries <= 0");
 
@@ -173,15 +173,15 @@ mod tests {
 
         // Test error when nentries == 0:
         let result = std::panic::catch_unwind(|| {
-            readfile(filename1, &varname, 0);
+            readfile(filename1, &varnames, 0);
         });
         assert!(result.is_err(), "Expected an error when nentries <= 0");
 
         // -------- test normal conditions and return values --------
         let nentries = 10;
 
-        let (index1, values1, _groups1) = readfile(filename1, &varname, nentries);
-        let (index2, values2, _groups2) = readfile(filename2, &varname, nentries);
+        let (index1, values1, _groups1) = readfile(filename1, &varnames, nentries);
+        let (index2, values2, _groups2) = readfile(filename2, &varnames, nentries);
 
         assert_eq!(
             index1.len(),
