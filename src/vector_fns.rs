@@ -47,7 +47,7 @@ pub fn calculate_dists(
 
     // Make a vector of (distances, index) from each `values1` entry to the closest entry of
     // `values2` in the multi-dimensional space defined by each set of vectors.
-    let _dists: Vec<_> = values1
+    let dists: Vec<_> = values1
         .iter()
         .flat_map(|v1| {
             v1.iter().map(|&x1| {
@@ -62,6 +62,20 @@ pub fn calculate_dists(
                     .min_by(|(dist1, _), (dist2, _)| dist1.partial_cmp(dist2).unwrap())
                     .unwrap()
             })
+        })
+        .collect();
+
+    let _final_dists: Vec<_> = values1
+        .iter()
+        .map(|v1| {
+            v1.iter()
+                .enumerate()
+                .map(|(i, &x1)| {
+                    let (_, idx) = dists[i];
+                    let x2 = values2[0][idx];
+                    x1 - x2
+                })
+                .collect::<Vec<_>>()
         })
         .collect();
 
