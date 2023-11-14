@@ -1,9 +1,6 @@
-pub fn order_vectors(
-    vector1: &Vec<Vec<f64>>,
-    vector2: &Vec<Vec<f64>>,
-) -> Vec<Vec<f64>> {
-    use kdtree::KdTree;
+pub fn order_vectors(vector1: &Vec<Vec<f64>>, vector2: &Vec<Vec<f64>>) -> Vec<Vec<f64>> {
     use kdtree::distance::squared_euclidean;
+    use kdtree::KdTree;
     use std::collections::HashSet;
 
     let mut kdtree = KdTree::new(3);
