@@ -45,6 +45,26 @@ pub fn calculate_dists(
         "Entries in values1 and values2 must have the same length"
     );
 
+    // Make a vector of (distances, index) from each `values1` entry to the closest entry of
+    // `values2` in the multi-dimensional space defined by each set of vectors.
+    let _dists: Vec<_> = values1
+        .iter()
+        .flat_map(|v1| {
+            v1.iter().map(|&x1| {
+                values2
+                    .iter()
+                    .flat_map(|v2| {
+                        v2.iter().enumerate().map(|(i, &x2)| {
+                            let dist = (x1 - x2).powi(2);
+                            (dist, i)
+                        })
+                    })
+                    .min_by(|(dist1, _), (dist2, _)| dist1.partial_cmp(dist2).unwrap())
+                    .unwrap()
+            })
+        })
+        .collect();
+
     // Full calls for the two cases, because `if`/`else` clauses require same type, and the `map`
     // calls generate different types.
     if absolute {
