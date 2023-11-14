@@ -14,6 +14,7 @@ pub mod vector_fns;
 /// * `fname2` - Path to local JSON file with data of mutation target towards which first data are
 /// to be mutated.
 /// * `varname` - Name of variable in both `fname1` and `fname2` to be mutated.
+/// * `varextra` - Extra variables to be considered in the mutation.
 /// * `nentries` - The number of entries to be read from the JSON files.
 /// * `outfilename` - Path to local output file.
 ///
@@ -31,7 +32,7 @@ pub mod vector_fns;
 /// # Panics
 ///
 /// This function will panic if the input files cannot be read, or if the output file cannot be written.
-pub fn uamutate(fname1: &str, fname2: &str, varname: &str, nentries: usize, outfilename: &str) {
+pub fn uamutate(fname1: &str, fname2: &str, varname: &str, varextra: Vec<char>, nentries: usize, outfilename: &str) {
     let (index1, values1, _groups1) = read_write_file::readfile(fname1, varname, nentries);
     let (_index2, values2, _groups2) = read_write_file::readfile(fname2, varname, nentries);
 
@@ -82,11 +83,12 @@ mod tests {
         let filename1 = "./test_resources/dat1.json";
         let filename2 = "./test_resources/dat2.json";
         let varname = "bike_index";
+        let varextra: [char; 0] = [];
         let nentries = 10;
         let outfilename = "/tmp/test_output.txt";
 
         // Call the function with the test parameters
-        uamutate(filename1, filename2, varname, nentries, outfilename);
+        uamutate(filename1, filename2, varname, varextra.to_vec(), nentries, outfilename);
 
         // Check that the output file exists
         assert!(Path::new(outfilename).exists());
