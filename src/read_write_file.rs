@@ -87,11 +87,15 @@ pub fn readfile(
     pairs.sort_unstable_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap());
 
     let index: Vec<usize> = pairs.iter().map(|&(index, _)| index).collect();
-    let values: Vec<Vec<f64>> = varname.iter().enumerate().map(|(i, _)| {
-        let mut pairs: Vec<_> = values[i].clone().into_iter().enumerate().collect();
-        pairs.sort_unstable_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap());
-        pairs.iter().map(|&(_, value)| value).collect()
-    }).collect();
+    let values: Vec<Vec<f64>> = varname
+        .iter()
+        .enumerate()
+        .map(|(i, _)| {
+            let mut pairs: Vec<_> = values[i].clone().into_iter().enumerate().collect();
+            pairs.sort_unstable_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap());
+            pairs.iter().map(|&(_, value)| value).collect()
+        })
+        .collect();
 
     let mut original_order: Vec<usize> = vec![0; values[0].len()];
     let mut groups: Vec<usize> = vec![0; values[0].len()];
