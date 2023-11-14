@@ -1,4 +1,4 @@
-pub fn order_vectors(vector1: &Vec<Vec<f64>>, vector2: &Vec<Vec<f64>>) -> Vec<Vec<f64>> {
+pub fn order_vectors(vector1: &[Vec<f64>], vector2: &[Vec<f64>]) -> Vec<usize> {
     use kdtree::distance::squared_euclidean;
     use kdtree::KdTree;
     use std::collections::HashSet;
@@ -18,15 +18,12 @@ pub fn order_vectors(vector1: &Vec<Vec<f64>>, vector2: &Vec<Vec<f64>>) -> Vec<Ve
             let index = *nearest[i].1;
             if !used_indices.contains(&index) {
                 used_indices.insert(index);
-                mapping.push(vector2[index].clone());
+                mapping.push(index);
                 break;
             }
             i += 1;
         }
     }
-
-    // The assignment is a vector of indices where assignment[i] is the index in vector2 of the point assigned to the point at index i in vector1
-    println!("{:?}", mapping);
 
     mapping
 }
