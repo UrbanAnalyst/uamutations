@@ -36,18 +36,20 @@ pub fn uamutate(
     fname1: &str,
     fname2: &str,
     varname: &str,
-    varextra: Vec<char>,
+    varextra: Vec<String>,
     nentries: usize,
     outfilename: &str,
 ) {
-    let (index1, values1, _groups1) = read_write_file::readfile(fname1, varname, nentries);
-    let (_index2, values2, _groups2) = read_write_file::readfile(fname2, varname, nentries);
+    let varsall: Vec<String> = vec![varname.to_string()];
+    let varsall = [varsall, varextra].concat();
+    let (index1, values1, _groups1) = read_write_file::readfile(fname1, &varsall, nentries);
+    let (_index2, values2, _groups2) = read_write_file::readfile(fname2, &varsall, nentries);
 
     // The values are then sorted in in increasing order, and the indices map back to the original
     // order. The following line then calculates successive differences between the two sets of
     // values, where `false` is for the `absolute` parameter, so that differences are calculated
     // relative to values1.
-    let dists_sorted = vector_fns::calculate_dists(&values1, &values2, false);
+    let dists_sorted = vector_fns::calculate_dists(&values1[0], &values2[0], false);
     // Then map those dists back onto the original order of `values1`:
     let dists: Vec<_> = index1.iter().map(|&i| dists_sorted[i]).collect();
     // let values: Vec<_> = index1.iter().map(|&i| values1[i]).collect();

@@ -36,9 +36,9 @@ use std::io::Write;
 
 pub fn readfile(
     filename: &str,
-    varname: &str,
+    varname: &Vec<String>,
     nentries: usize,
-) -> (Vec<usize>, Vec<f64>, Vec<usize>) {
+) -> (Vec<usize>, Vec<Vec<f64>>, Vec<usize>) {
     assert!(nentries > 0, "nentries must be greater than zero");
 
     let file = File::open(filename).unwrap();
@@ -46,22 +46,24 @@ pub fn readfile(
 
     let json: Value = serde_json::from_reader(reader).unwrap();
 
-    let mut values = Vec::new();
+    let mut values = vec![Vec::new(); varname.len()];
     let mut city_group = Vec::new();
     let city_group_col = "index";
 
-    let mut var_exists = false;
+    let mut var_exists = vec![false; varname.len()];
 
     if let Value::Array(array) = &json {
         for item in array {
-            if values.len() >= nentries {
+            if values[0].len() >= nentries {
                 break;
             }
             if let Value::Object(map) = item {
-                if let Some(Value::Number(number)) = map.get(varname) {
-                    var_exists = true;
-                    if let Some(number) = number.as_f64() {
-                        values.push(number);
+                for (i, var) in varname.iter().enumerate() {
+                    if let Some(Value::Number(number)) = map.get(var.as_str()) {
+                        var_exists[i] = true;
+                        if let Some(number) = number.as_f64() {
+                            values[i].push(number);
+                        }
                     }
                 }
                 if let Some(Value::Number(number)) = map.get(city_group_col) {
@@ -73,20 +75,26 @@ pub fn readfile(
         }
     }
 
-    assert!(
-        var_exists,
-        "Variable {} does not exist in the JSON file",
-        varname
-    );
+    for (i, exists) in var_exists.iter().enumerate() {
+        assert!(
+            *exists,
+            "Variable {} does not exist in the JSON file",
+            varname[i]
+        );
+    }
 
-    let mut pairs: Vec<_> = values.into_iter().enumerate().collect();
+    let mut pairs: Vec<_> = values[0].clone().into_iter().enumerate().collect();
     pairs.sort_unstable_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap());
 
     let index: Vec<usize> = pairs.iter().map(|&(index, _)| index).collect();
-    let values: Vec<f64> = pairs.iter().map(|&(_, value)| value).collect();
+    let values: Vec<Vec<f64>> = varname.iter().enumerate().map(|(i, _)| {
+        let mut pairs: Vec<_> = values[i].clone().into_iter().enumerate().collect();
+        pairs.sort_unstable_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap());
+        pairs.iter().map(|&(_, value)| value).collect()
+    }).collect();
 
-    let mut original_order: Vec<usize> = vec![0; values.len()];
-    let mut groups: Vec<usize> = vec![0; values.len()];
+    let mut original_order: Vec<usize> = vec![0; values[0].len()];
+    let mut groups: Vec<usize> = vec![0; values[0].len()];
     for (i, &idx) in index.iter().enumerate() {
         original_order[idx] = i;
         groups[idx] = city_group[i];
@@ -94,16 +102,16 @@ pub fn readfile(
 
     assert_eq!(
         index.len(),
-        values.len(),
+        values[0].len(),
         "The lengths of index and values are not equal"
     );
     assert_eq!(
         original_order.len(),
-        values.len(),
+        values[0].len(),
         "The lengths of index and values are not equal"
     );
     assert!(
-        values.iter().tuple_windows().all(|(a, b)| a <= b),
+        values[0].iter().tuple_windows().all(|(a, b)| a <= b),
         "values are not sorted"
     );
 
