@@ -15,5 +15,6 @@ const OUTFILENAME: &str = "output.txt";
 ///
 /// This exists only to locally call and run the library.
 fn main() {
-    uamutations::uamutate(FNAME1, FNAME2, VARNAME, NENTRIES, OUTFILENAME);
+    let varextra: Vec<String> = Vec::new();
+    uamutations::uamutate(FNAME1, FNAME2, VARNAME, varextra, NENTRIES, OUTFILENAME);
 }
