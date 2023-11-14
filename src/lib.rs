@@ -92,7 +92,7 @@ mod tests {
         let filename1 = "./test_resources/dat1.json";
         let filename2 = "./test_resources/dat2.json";
         let varname = "bike_index";
-        let varextra: [char; 0] = [];
+        let varextra: Vec<String> = Vec::new();
         let nentries = 10;
         let outfilename = "/tmp/test_output.txt";
 
@@ -101,7 +101,7 @@ mod tests {
             filename1,
             filename2,
             varname,
-            varextra.to_vec(),
+            varextra,
             nentries,
             outfilename,
         );

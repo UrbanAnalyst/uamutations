@@ -29,9 +29,9 @@ use std::io::Write;
 /// ```
 /// use uamutations::read_write_file::readfile;
 /// let filename = "./test_resources/dat1.json";
-/// let varname = "transport";
+/// let varname = vec!["transport".to_string()];
 /// let nentries = 10;
-/// let (index, values, groups) = readfile(filename, varname, nentries);
+/// let (index, values, groups) = readfile(filename, &varname, nentries);
 /// ```
 
 pub fn readfile(
@@ -152,19 +152,19 @@ mod tests {
     fn test_readfile() {
         let filename1 = "./test_resources/dat1.json";
         let filename2 = "./test_resources/dat2.json";
-        let varname = "transport";
+        let varname = vec!["transport".to_string()];
 
         // -------- test panic conditions --------
         // Test when nentries <= 0
         let nentries = 0;
         let result = std::panic::catch_unwind(|| {
-            readfile(filename1, varname, nentries);
+            readfile(filename1, &varname, nentries);
         });
         assert!(result.is_err(), "Expected an error when nentries <= 0");
 
         // Test error when variables do not exist in JSON file
         let result = std::panic::catch_unwind(|| {
-            readfile(filename1, "nonexistent_var", nentries);
+            readfile(filename1, &vec!["nonexistent_var".to_string()], nentries);
         });
         assert!(
             result.is_err(),
@@ -173,15 +173,15 @@ mod tests {
 
         // Test error when nentries == 0:
         let result = std::panic::catch_unwind(|| {
-            readfile(filename1, varname, 0);
+            readfile(filename1, &varname, 0);
         });
         assert!(result.is_err(), "Expected an error when nentries <= 0");
 
         // -------- test normal conditions and return values --------
         let nentries = 10;
 
-        let (index1, values1, _groups1) = readfile(filename1, varname, nentries);
-        let (index2, values2, _groups2) = readfile(filename2, varname, nentries);
+        let (index1, values1, _groups1) = readfile(filename1, &varname, nentries);
+        let (index2, values2, _groups2) = readfile(filename2, &varname, nentries);
 
         assert_eq!(
             index1.len(),
@@ -189,7 +189,7 @@ mod tests {
             "The lengths of index1 and values1 are not equal"
         );
         assert_eq!(
-            values1.len(),
+            values1[0].len(),
             nentries,
             "The lengths of index1 and values1 are not equal"
         );
@@ -199,16 +199,16 @@ mod tests {
             "The lengths of index2 and values2 are not equal"
         );
         assert_eq!(
-            values2.len(),
+            values2[0].len(),
             nentries,
             "The lengths of values1 and values2 are not equal"
         );
         assert!(
-            values1.iter().tuple_windows().all(|(a, b)| a <= b),
+            values1[0].iter().tuple_windows().all(|(a, b)| a <= b),
             "values1 is not sorted"
         );
         assert!(
-            values2.iter().tuple_windows().all(|(a, b)| a <= b),
+            values2[0].iter().tuple_windows().all(|(a, b)| a <= b),
             "values2 is not sorted"
         );
     }
