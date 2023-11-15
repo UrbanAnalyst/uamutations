@@ -34,16 +34,18 @@ pub fn order_vectors(vector1: &[Vec<f64>], vector2: &[Vec<f64>]) -> Vec<usize> {
     let mut used_indices = HashSet::new();
     let mut mapping = Vec::new();
 
-    for point1 in vector1 {
+    for i in 0..vector1[0].len() {
         let mut min_distance = f64::MAX;
         let mut min_index = 0;
+        let point1 = vector1.iter().map(|v| v[i]).collect::<Vec<_>>();
 
-        for (index, point2) in vector2.iter().enumerate() {
+        for (index, _) in vector2[0].iter().enumerate() {
             if used_indices.contains(&index) {
                 continue;
             }
 
-            let distance = squared_euclidean(point1, point2);
+            let point2 = vector2.iter().map(|v| v[index]).collect::<Vec<_>>();
+            let distance = squared_euclidean(&point1, &point2);
             if distance < min_distance {
                 min_distance = distance;
                 min_index = index;
