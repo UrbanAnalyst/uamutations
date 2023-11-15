@@ -12,4 +12,6 @@ description = "Implementation of the mutation algorithm for Urban Analyst."
 [dependencies]
 itertools = "0.11.0"
 kdtree = "0.7.0"
+ndarray = "0.15.6"
+pca = "0.1.4"
 serde_json = "1.0"

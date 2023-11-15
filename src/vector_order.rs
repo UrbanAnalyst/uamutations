@@ -28,6 +28,27 @@ pub fn order_vectors_kd(vector1: &[Vec<f64>], vector2: &[Vec<f64>]) -> Vec<usize
     mapping
 }
 
+use ndarray::Array1;
+use ndarray::Array2;
+use pca::PCA;
+
+pub fn pca(vector1: &[Vec<f64>]) -> Array1<f64> {
+    let mut pca = PCA::new();
+
+    let rows = vector1.len(); // multivariate dimensions
+    let cols = vector1[0].len(); // nobs
+    let flattened: Vec<f64> = vector1.iter().flatten().cloned().collect();
+    let array = Array2::from_shape_vec((rows, cols), flattened).unwrap();
+    // Array needs to be transposed for pca:
+    let array = array.t().to_owned();
+
+    pca.fit(array.clone(), None).unwrap();
+
+    let transformed = pca.transform(array).unwrap();
+    let first_pca_axis = transformed.column(0).to_owned();
+    first_pca_axis
+}
+
 pub fn order_vectors(vector1: &[Vec<f64>], vector2: &[Vec<f64>]) -> Vec<usize> {
     use std::collections::HashSet;
 
