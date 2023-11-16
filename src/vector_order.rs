@@ -1,30 +1,25 @@
 pub fn order_vectors(vector1: &[Vec<f64>], vector2: &[Vec<f64>]) -> Vec<usize> {
-    use std::collections::HashSet;
+    use rayon::prelude::*;
 
-    let mut used_indices = HashSet::new();
-    let mut mapping = Vec::new();
+    let mapping: Vec<usize> = (0..vector1[0].len())
+        .into_par_iter()
+        .map(|i| {
+            let mut min_distance = f64::MAX;
+            let mut min_index = 0;
+            let point1 = vector1.iter().map(|v| v[i]).collect::<Vec<_>>();
 
-    for i in 0..vector1[0].len() {
-        let mut min_distance = f64::MAX;
-        let mut min_index = 0;
-        let point1 = vector1.iter().map(|v| v[i]).collect::<Vec<_>>();
-
-        for (index, _) in vector2[0].iter().enumerate() {
-            if used_indices.contains(&index) {
-                continue;
+            for (index, _) in vector2[0].iter().enumerate() {
+                let point2 = vector2.iter().map(|v| v[index]).collect::<Vec<_>>();
+                let distance = squared_euclidean(&point1, &point2);
+                if distance < min_distance {
+                    min_distance = distance;
+                    min_index = index;
+                }
             }
 
-            let point2 = vector2.iter().map(|v| v[index]).collect::<Vec<_>>();
-            let distance = squared_euclidean(&point1, &point2);
-            if distance < min_distance {
-                min_distance = distance;
-                min_index = index;
-            }
-        }
-
-        used_indices.insert(min_index);
-        mapping.push(min_index);
-    }
+            min_index
+        })
+        .collect();
 
     mapping
 }
