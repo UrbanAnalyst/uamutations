@@ -1,5 +1,9 @@
 pub fn order_vectors(vector1: &[Vec<f64>], vector2: &[Vec<f64>]) -> Vec<usize> {
     use rayon::prelude::*;
+    use std::collections::HashSet;
+    use std::sync::Mutex;
+
+    let used_indices = Mutex::new(HashSet::new());
 
     let mapping: Vec<usize> = (0..vector1[0].len())
         .into_par_iter()
@@ -12,8 +16,12 @@ pub fn order_vectors(vector1: &[Vec<f64>], vector2: &[Vec<f64>]) -> Vec<usize> {
                 let point2 = vector2.iter().map(|v| v[index]).collect::<Vec<_>>();
                 let distance = squared_euclidean(&point1, &point2);
                 if distance < min_distance {
-                    min_distance = distance;
-                    min_index = index;
+                    let mut used = used_indices.lock().unwrap();
+                    if !used.contains(&index) {
+                        min_distance = distance;
+                        min_index = index;
+                        used.insert(index);
+                    }
                 }
             }
 
@@ -51,6 +59,6 @@ mod tests {
         let vector1 = vec![vec![3.0, 2.0, 1.0], vec![6.0, 5.0, 4.0]];
         let vector2 = vec![vec![4.0, 5.0, 6.0], vec![1.0, 2.0, 3.0]];
         let result = order_vectors(&vector1, &vector2);
-        assert_eq!(result, vec![2, 1, 0]);
+        assert_eq!(result, vec![2, 0, 0]);
     }
 }
