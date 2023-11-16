@@ -36,3 +36,16 @@ fn squared_euclidean(point1: &[f64], point2: &[f64]) -> f64 {
         .map(|(&x1, &x2)| (x1 - x2).powi(2))
         .sum()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_squared_euclidean() {
+        let point1 = vec![1.0, 2.0, 3.0];
+        let point2 = vec![4.0, 5.0, 6.0];
+        let result = squared_euclidean(&point1, &point2);
+        assert_eq!(result, 27.0);
+    }
+}
