@@ -853,6 +853,7 @@ dependencies = [
  "itertools",
  "kdtree",
  "ndarray",
+ "ndarray-linalg",
  "pca",
  "serde_json",
 ]

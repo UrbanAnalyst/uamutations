@@ -28,25 +28,38 @@ pub fn order_vectors_kd(vector1: &[Vec<f64>], vector2: &[Vec<f64>]) -> Vec<usize
     mapping
 }
 
-use ndarray::Array1;
-use ndarray::Array2;
-use pca::PCA;
+use ndarray::{Array2, Axis};
+use ndarray_linalg::{Eigh, UPLO};
 
-pub fn pca(vector1: &[Vec<f64>]) -> Array1<f64> {
-    let mut pca = PCA::new();
-
+pub fn pca(vector1: &[Vec<f64>]) -> Array2<f64> {
     let rows = vector1.len(); // multivariate dimensions
     let cols = vector1[0].len(); // nobs
     let flattened: Vec<f64> = vector1.iter().flatten().cloned().collect();
-    let array = Array2::from_shape_vec((rows, cols), flattened).unwrap();
-    // Array needs to be transposed for pca:
-    let array = array.t().to_owned();
+    let data = Array2::from_shape_vec((rows, cols), flattened).unwrap();
 
-    pca.fit(array.clone(), None).unwrap();
+    // Calculate the mean of the data
+    let mean = data.mean_axis(Axis(0)).unwrap();
 
-    let transformed = pca.transform(array).unwrap();
-    let first_pca_axis = transformed.column(0).to_owned();
-    first_pca_axis
+    // Subtract the mean from the data
+    let centered_data = data.clone() - &mean;
+
+    // Calculate the covariance matrix of the centered data
+    let cov = centered_data.t().dot(&centered_data) / (data.len_of(Axis(0)) - 1) as f64;
+
+    // Calculate the eigenvalues and eigenvectors of the covariance matrix
+    let (eigenvalues, eigenvectors) = cov.eigh(UPLO::Lower).unwrap();
+
+    // Sort the eigenvalues and corresponding eigenvectors in descending order
+    let mut sorted_indices = eigenvalues
+        .indexed_iter()
+        .map(|(i, _)| i)
+        .collect::<Vec<_>>();
+    sorted_indices.sort_unstable_by(|&i, &j| eigenvalues[j].partial_cmp(&eigenvalues[i]).unwrap());
+
+    // let first_eigenvector = eigenvectors.select(Axis(0), &sorted_indices[0..1]);
+    // let projected_data = centered_data.dot(&first_eigenvector.t());
+
+    eigenvectors.select(Axis(0), &sorted_indices[0..1])
 }
 
 pub fn order_vectors(vector1: &[Vec<f64>], vector2: &[Vec<f64>]) -> Vec<usize> {
