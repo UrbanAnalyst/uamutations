@@ -48,4 +48,14 @@ mod tests {
         let result = squared_euclidean(&point1, &point2);
         assert_eq!(result, 27.0);
     }
+
+    #[test]
+    fn test_order_vectors() {
+        // Vectors of 2 dimensions with 3 points each. The order should be then the order of the
+        // second vector relative to the first.
+        let vector1 = vec![vec![3.0, 2.0, 1.0], vec![6.0, 5.0, 4.0]];
+        let vector2 = vec![vec![4.0, 5.0, 6.0], vec![1.0, 2.0, 3.0]];
+        let result = order_vectors(&vector1, &vector2);
+        assert_eq!(result, vec![2, 1, 0]);
+    }
 }
