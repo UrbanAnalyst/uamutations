@@ -3,7 +3,7 @@ pub fn order_vectors_kd(vector1: &[Vec<f64>], vector2: &[Vec<f64>]) -> Vec<usize
     use kdtree::KdTree;
     use std::collections::HashSet;
 
-    let mut kdtree = KdTree::new(vector2[0].len());
+    let mut kdtree = KdTree::new(vector1[0].len());
     for (i, point) in vector2.iter().enumerate() {
         kdtree.add(point, i).unwrap();
     }
@@ -11,18 +11,27 @@ pub fn order_vectors_kd(vector1: &[Vec<f64>], vector2: &[Vec<f64>]) -> Vec<usize
     let mut used_indices = HashSet::new();
     let mut mapping = Vec::new();
 
-    for point1 in vector1 {
-        let mut i = 0;
-        loop {
-            let nearest = kdtree.nearest(point1, i + 1, &squared_euclidean).unwrap();
-            let index = *nearest[i].1;
-            if !used_indices.contains(&index) {
-                used_indices.insert(index);
-                mapping.push(index);
-                break;
+    for i in 0..vector1[0].len() {
+        let point1 = vector1.iter().map(|v| v[i]).collect::<Vec<_>>();
+        let mut min_distance = f64::MAX;
+        let mut min_index = 0;
+
+        for j in 0..vector2[0].len() {
+            if used_indices.contains(&j) {
+                continue;
             }
-            i += 1;
+
+            let point2 = vector2.iter().map(|v| v[j]).collect::<Vec<_>>();
+            let distance = squared_euclidean(&point1, &point2);
+
+            if distance < min_distance {
+                min_distance = distance;
+                min_index = j;
+            }
         }
+
+        used_indices.insert(min_index);
+        mapping.push(min_index);
     }
 
     mapping
