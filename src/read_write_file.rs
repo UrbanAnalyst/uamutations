@@ -73,7 +73,9 @@ pub fn readfile(
                 }
                 if let Some(Value::Number(number)) = map.get(city_group_col) {
                     if let Some(number) = number.as_f64() {
-                        city_group.push(number as usize);
+                        if city_group.len() < nentries {
+                            city_group.push(number as usize);
+                        }
                     }
                 }
             }
@@ -87,6 +89,10 @@ pub fn readfile(
             varnames[i]
         );
     }
+    assert!(
+        city_group.len() == values.dim().1,
+        "The length of city_group does not match the number of rows in values"
+    );
 
     (values, city_group)
 }
