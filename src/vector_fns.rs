@@ -133,22 +133,22 @@ mod tests {
 
     #[test]
     fn test_calculate_dists_absolute() {
-        let values1 = vec![vec![1.0, 2.0, 4.0, 5.0]];
-        let values2 = vec![vec![2.0, 3.0, 7.0, 9.0]];
+        let _values1 = vec![vec![1.0, 2.0, 4.0, 5.0]];
+        let _values2 = vec![vec![2.0, 3.0, 7.0, 9.0]];
         // For each values1, result will be (v2 - v1) for closest values2. So closest value to
         // v1[3] = 4, for example, is v2 = 3, and (v2 - v1) = 3 - 4 = -1. Or v1[4] = 5, with
         // closest of 3, and 3 - 5 = -2.
-        let expected = vec![1.0, 0.0, -1.0, -2.0]; // values2 - values1
-                                                   // assert_eq!(calculate_dists(&values1, &values2, true), expected);
+        let _expected = vec![1.0, 0.0, -1.0, -2.0]; // values2 - values1
+                                                    // assert_eq!(calculate_dists(&values1, &values2, true), expected);
     }
 
     #[test]
     fn test_calculate_dists_relative() {
-        let values1 = vec![vec![1.0, 2.0, 4.0, 5.0]];
-        let values2 = vec![vec![2.0, 3.0, 7.0, 9.0]];
+        let _values1 = vec![vec![1.0, 2.0, 4.0, 5.0]];
+        let _values2 = vec![vec![2.0, 3.0, 7.0, 9.0]];
         // Closest values are same as above, but calculated here as relative values, so -1 becomes
         // -1/4, and -2 becomes -2/5.
-        let expected = vec![1.0, 0.0, -0.25, -0.4]; // (values2 - values1) / values1
-                                                    // assert_eq!(calculate_dists(&values1, &values2, false), expected);
+        let _expected = vec![1.0, 0.0, -0.25, -0.4]; // (values2 - values1) / values1
+                                                     // assert_eq!(calculate_dists(&values1, &values2, false), expected);
     }
 }
