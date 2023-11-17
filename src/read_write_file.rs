@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use ndarray::Array2;
 use serde_json::Value;
 use std::fs::File;
@@ -32,14 +31,14 @@ use std::io::Write;
 /// let filename = "./test_resources/dat1.json";
 /// let varnames = vec!["transport".to_string()];
 /// let nentries = 10;
-/// let (index, values, groups) = readfile(filename, &varnames, nentries);
+/// let (values, groups) = readfile(filename, &varnames, nentries);
 /// ```
 
 pub fn readfile(
     filename: &str,
     varnames: &Vec<String>,
     nentries: usize,
-) -> (Vec<usize>, Array2<f64>, Vec<usize>) {
+) -> (Array2<f64>, Vec<usize>) {
     assert!(nentries > 0, "nentries must be greater than zero");
 
     let file = File::open(filename).unwrap();
@@ -89,43 +88,7 @@ pub fn readfile(
         );
     }
 
-    let mut pairs: Vec<_> = values.column(0).iter().cloned().enumerate().collect();
-    pairs.sort_unstable_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap());
-
-    let index: Vec<usize> = pairs.iter().map(|&(index, _)| index).collect();
-    let values_sort: Vec<Vec<f64>> = varnames
-        .iter()
-        .enumerate()
-        .map(|(i, _)| {
-            let mut pairs: Vec<_> = values.row(i).to_vec().into_iter().enumerate().collect();
-            pairs.sort_unstable_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap());
-            pairs.iter().map(|&(_, value)| value).collect()
-        })
-        .collect();
-
-    let mut original_order: Vec<usize> = vec![0; values_sort[0].len()];
-    let mut groups: Vec<usize> = vec![0; values_sort[0].len()];
-    for (i, &idx) in index.iter().enumerate() {
-        original_order[idx] = i;
-        groups[idx] = city_group[i];
-    }
-
-    // assert_eq!(
-    //     index.len(),
-    //     values_sort[0].len(),
-    //     "The lengths of index and values are not equal"
-    // );
-    assert_eq!(
-        original_order.len(),
-        values_sort[0].len(),
-        "The lengths of index and values are not equal"
-    );
-    assert!(
-        values_sort[0].iter().tuple_windows().all(|(a, b)| a <= b),
-        "values are not sorted"
-    );
-
-    (original_order, values, groups)
+    (values, city_group)
 }
 
 /// Writes the mean mutation values to a file.
@@ -152,7 +115,6 @@ pub fn write_file(sums: &[f64], filename: &str) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use itertools::Itertools;
 
     #[test]
     fn test_readfile() {
@@ -186,24 +148,24 @@ mod tests {
         // -------- test normal conditions and return values --------
         let nentries = 10;
 
-        let (index1, _values1, _groups1) = readfile(filename1, &varnames, nentries);
-        let (index2, _values2, _groups2) = readfile(filename2, &varnames, nentries);
+        let (_values1, _groups1) = readfile(filename1, &varnames, nentries);
+        let (_values2, _groups2) = readfile(filename2, &varnames, nentries);
 
-        assert_eq!(
-            index1.len(),
-            nentries,
-            "The lengths of index1 and values1 are not equal"
-        );
+        // assert_eq!(
+        //     index1.len(),
+        //     nentries,
+        //     "The lengths of index1 and values1 are not equal"
+        // );
         // assert_eq!(
         //     values1[0].len(),
         //     nentries,
         //     "The lengths of index1 and values1 are not equal"
         // );
-        assert_eq!(
-            index2.len(),
-            nentries,
-            "The lengths of index2 and values2 are not equal"
-        );
+        // assert_eq!(
+        //     index2.len(),
+        //     nentries,
+        //     "The lengths of index2 and values2 are not equal"
+        // );
         // assert_eq!(
         //     values2[0].len(),
         //     nentries,

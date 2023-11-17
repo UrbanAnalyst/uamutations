@@ -22,8 +22,8 @@ fn main() {
     let varsall: Vec<String> = vec![VARNAME.to_string()];
     let varextra = vec!["natural".to_string()];
     let varsall = [varsall, varextra].concat();
-    let (_index1, values1, _groups1) = read_write_file::readfile(FNAME1, &varsall, NENTRIES);
-    let (_index2, values2, _groups2) = read_write_file::readfile(FNAME2, &varsall, NENTRIES);
+    let (values1, _groups1) = read_write_file::readfile(FNAME1, &varsall, NENTRIES);
+    let (values2, _groups2) = read_write_file::readfile(FNAME2, &varsall, NENTRIES);
 
     use std::time::Instant;
     let start = Instant::now();
