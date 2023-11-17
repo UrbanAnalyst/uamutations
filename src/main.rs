@@ -3,6 +3,7 @@
 //! become more like those of another selected city.
 
 extern crate uamutations;
+pub mod mlr;
 pub mod read_write_file;
 
 const NENTRIES: usize = 1000;
@@ -21,14 +22,17 @@ fn main() {
     let varsall: Vec<String> = vec![VARNAME.to_string()];
     let varextra = vec!["natural".to_string()];
     let varsall = [varsall, varextra].concat();
-    let (_values1, _groups1) = read_write_file::readfile(FNAME1, &varsall, NENTRIES);
+    let (values1, _groups1) = read_write_file::readfile(FNAME1, &varsall, NENTRIES);
     let (_values2, _groups2) = read_write_file::readfile(FNAME2, &varsall, NENTRIES);
 
-    // use std::time::Instant;
-    // let start = Instant::now();
+    use std::time::Instant;
+    let start = Instant::now();
+
     // let _order2 = vector_order::order_vectors(&values1, &values2);
-    // let duration_dists = format!("{:.4}", start.elapsed().as_secs_f64());
-    // println!("time = {}", duration_dists);
+    let _beta = mlr::mlr_beta(&values1);
+
+    let duration_dists = format!("{:.4}", start.elapsed().as_secs_f64());
+    println!("time = {}", duration_dists);
 
     let varextra: Vec<String> = Vec::new();
     // let varextra = vec!["natural".to_string()];
