@@ -1,4 +1,5 @@
 use ndarray::{s, Array2};
+use ndarray_linalg::LeastSquaresSvd;
 
 /// Calculates beta coefficients (slopes) of a multiple linear regression of dimensions [1.., _] of
 /// input array against first dimension [0, _].
@@ -31,11 +32,18 @@ use ndarray::{s, Array2};
 /// ```
 pub fn mlr_beta(data: &Array2<f64>) -> Vec<f64> {
     assert!(!data.is_empty(), "values1 must not be empty");
+    println!("data has {:?} dimensions", data.dim());
 
-    let mut data_clone = data.clone();
-    let _target_var = data_clone.column(0).to_owned();
-    data_clone.slice_mut(s![.., 1..]);
-    // let _dsq = data.t().dot(data);
+    let data_t = data.t();
+    let target_var = data_t.column(0).to_owned();
+    println!("target_var has {:?} dimensions", target_var.dim());
+    let data_t = data_t.slice(s![.., 1..]).to_owned();
+    println!("data_t has {:?} dimensions", data_t.dim());
+
+    let result = data_t.least_squares(&target_var).unwrap();
+    let b = result.solution;
+    println!("{:?}", b);
+    println!("b has {:?} dimensions", b.dim());
 
     let tmp = vec![2.0, 3.0, 7.0, 9.0];
     tmp
