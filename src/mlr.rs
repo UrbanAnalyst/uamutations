@@ -19,16 +19,24 @@ use ndarray_linalg::LeastSquaresSvd;
 /// # Example
 ///
 /// ```
-/// // use uamutations::vector_fns::calculate_dists;
-/// let values1 = vec![vec![1.0, 2.0, 4.0, 5.0]];
-/// let values2 = vec![vec![2.0, 3.0, 7.0, 9.0]];
-/// // let result = calculate_dists(&values1, &values2, true);
-/// // For each values1, result will be (v2 - v1) for closest values2. So closest value to v1[3] =
-/// // 4, for example, is v2 = 3, and (v2 - v1) = 3 - 4 = -1. Or v1[4] = 5, with closest of 3, and
-/// // 3 - 5 = -2.
-/// // assert_eq!(result, vec![1.0, 0.0, -1.0, -2.0]);
-/// // let result = calculate_dists(&values1, &values2, false);
-/// // assert_eq!(result, vec![1.0, 0.0, -0.25, -0.4]);
+/// use ndarray::array;
+/// use uamutations::mlr::mlr_beta;
+/// // Example with 2 variables
+/// let data_2 = array![
+/// [1.0, 2.0, 3.0, 4.0, 5.0],
+/// [2.1, 3.2, 4.1, 5.2, 5.9],
+/// ];
+/// let result_2 = mlr_beta(&data_2);
+/// println!("Result with 2 variables: {:?}", result_2);
+///
+/// // Example with 3 variables
+/// let data_3 = array![
+/// [1.0, 2.0, 3.0, 4.0, 5.0],
+/// [2.1, 3.2, 4.1, 5.2, 5.9],
+/// [3.0, 4.1, 4.9, 6.0, 7.1],
+/// ];
+/// let result_3 = mlr_beta(&data_3);
+/// println!("Result with 3 variables: {:?}", result_3);
 /// ```
 pub fn mlr_beta(data: &Array2<f64>) -> Vec<f64> {
     assert!(!data.is_empty(), "values1 must not be empty");
