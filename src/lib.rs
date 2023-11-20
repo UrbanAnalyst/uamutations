@@ -87,6 +87,18 @@ pub fn uamutate(
     read_write_file::write_file(&sums, outfilename);
 }
 
+/// Adjusts the first row of `values1` based on the multi-linear regression coefficients of the
+/// remaining rows of `values1` against `values2`.
+///
+/// This effectivly removes the dependence of the first row of `values1` by on all other
+/// variables/rows, and replaces it with the dependence of `values2` on the same variables.
+///
+/// # Arguments
+///
+/// * `values1` - A 2D array where the first row is the variable to be adjusted and the remaining
+/// rows are the other variables.
+/// * `values2` - A 2D array with the same structure as `values1`, used to calculate the MLR
+/// coefficients for adjustment.
 fn adj_for_beta(values1: &mut Array2<f64>, values2: &Array2<f64>) {
     // Calculate MLR regression coefficients between first variables and all others:
     let beta1 = mlr::mlr_beta(values1);
