@@ -48,10 +48,9 @@ pub fn mlr_beta(data: &Array2<f64>) -> Vec<f64> {
 
     // The least squares regression call:
     let result = data_clone.least_squares(&target_var).unwrap();
-    let b = result.solution;
+    let b: Vec<f64> = result.solution.to_vec();
     println!("{:?}", b);
-    println!("b has {:?} dimensions", b.dim());
+    println!("b has {:?} length", b.len());
 
-    let tmp = vec![2.0, 3.0, 7.0, 9.0];
-    tmp
+    b
 }
