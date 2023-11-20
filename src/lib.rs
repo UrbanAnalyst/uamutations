@@ -119,10 +119,28 @@ fn adj_for_beta(values1: &mut Array2<f64>, values2: &Array2<f64>) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ndarray::array;
     use std::fs;
     use std::io::prelude::*;
     use std::io::BufReader;
     use std::path::Path;
+
+    #[test]
+    fn test_adj_for_beta() {
+        let mut v1 = array![[1.0, 2.0, 3.0, 4.0, 5.0], [2.1, 3.2, 4.1, 5.2, 5.9]];
+        let v1_orig = v1.clone();
+        let v2 = array![[1.0, 2.0, 3.0, 4.0, 5.0], [3.1, 4.3, 5.3, 6.5, 7.3]];
+        adj_for_beta(&mut v1, &v2);
+        assert_ne!(
+            v1, v1_orig,
+            "v1 should be different from v1_orig after adj_for_beta"
+        );
+        assert_eq!(
+            v1.slice(s![1.., ..]),
+            v1_orig.slice(s![1.., ..]),
+            "Only the first row of v1 should be different"
+        );
+    }
 
     #[test]
     fn test_uamutate() {
