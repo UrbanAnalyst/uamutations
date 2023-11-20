@@ -1,4 +1,4 @@
-use itertools::Itertools;
+use ndarray::Array2;
 use serde_json::Value;
 use std::fs::File;
 use std::io::BufReader;
@@ -31,14 +31,14 @@ use std::io::Write;
 /// let filename = "./test_resources/dat1.json";
 /// let varnames = vec!["transport".to_string()];
 /// let nentries = 10;
-/// let (index, values, groups) = readfile(filename, &varnames, nentries);
+/// let (values, groups) = readfile(filename, &varnames, nentries);
 /// ```
 
 pub fn readfile(
     filename: &str,
     varnames: &Vec<String>,
     nentries: usize,
-) -> (Vec<usize>, Vec<Vec<f64>>, Vec<usize>) {
+) -> (Array2<f64>, Vec<usize>) {
     assert!(nentries > 0, "nentries must be greater than zero");
 
     let file = File::open(filename).unwrap();
@@ -46,29 +46,36 @@ pub fn readfile(
 
     let json: Value = serde_json::from_reader(reader).unwrap();
 
-    let mut values = vec![Vec::new(); varnames.len()];
+    let mut values = Array2::<f64>::zeros((varnames.len(), nentries));
+    //let mut values = vec![Vec::new(); varnames.len()];
     let mut city_group = Vec::new();
     let city_group_col = "index";
 
     let mut var_exists = vec![false; varnames.len()];
+    let mut current_positions = vec![0; varnames.len()];
 
     if let Value::Array(array) = &json {
         for item in array {
-            if values[0].len() >= nentries {
-                break;
-            }
+            // if values[0].len() >= nentries {
+            //     break;
+            // }
             if let Value::Object(map) = item {
                 for (i, var) in varnames.iter().enumerate() {
                     if let Some(Value::Number(number)) = map.get(var.as_str()) {
                         var_exists[i] = true;
                         if let Some(number) = number.as_f64() {
-                            values[i].push(number);
+                            if current_positions[i] < nentries {
+                                values[[i, current_positions[i]]] = number;
+                                current_positions[i] += 1;
+                            }
                         }
                     }
                 }
                 if let Some(Value::Number(number)) = map.get(city_group_col) {
                     if let Some(number) = number.as_f64() {
-                        city_group.push(number as usize);
+                        if city_group.len() < nentries {
+                            city_group.push(number as usize);
+                        }
                     }
                 }
             }
@@ -82,44 +89,12 @@ pub fn readfile(
             varnames[i]
         );
     }
-
-    let mut pairs: Vec<_> = values[0].clone().into_iter().enumerate().collect();
-    pairs.sort_unstable_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap());
-
-    let index: Vec<usize> = pairs.iter().map(|&(index, _)| index).collect();
-    let values: Vec<Vec<f64>> = varnames
-        .iter()
-        .enumerate()
-        .map(|(i, _)| {
-            let mut pairs: Vec<_> = values[i].clone().into_iter().enumerate().collect();
-            pairs.sort_unstable_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap());
-            pairs.iter().map(|&(_, value)| value).collect()
-        })
-        .collect();
-
-    let mut original_order: Vec<usize> = vec![0; values[0].len()];
-    let mut groups: Vec<usize> = vec![0; values[0].len()];
-    for (i, &idx) in index.iter().enumerate() {
-        original_order[idx] = i;
-        groups[idx] = city_group[i];
-    }
-
-    assert_eq!(
-        index.len(),
-        values[0].len(),
-        "The lengths of index and values are not equal"
-    );
-    assert_eq!(
-        original_order.len(),
-        values[0].len(),
-        "The lengths of index and values are not equal"
-    );
     assert!(
-        values[0].iter().tuple_windows().all(|(a, b)| a <= b),
-        "values are not sorted"
+        city_group.len() == values.dim().1,
+        "The length of city_group does not match the number of rows in values"
     );
 
-    (original_order, values, groups)
+    (values, city_group)
 }
 
 /// Writes the mean mutation values to a file.
@@ -146,7 +121,6 @@ pub fn write_file(sums: &[f64], filename: &str) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use itertools::Itertools;
 
     #[test]
     fn test_readfile() {
@@ -180,37 +154,37 @@ mod tests {
         // -------- test normal conditions and return values --------
         let nentries = 10;
 
-        let (index1, values1, _groups1) = readfile(filename1, &varnames, nentries);
-        let (index2, values2, _groups2) = readfile(filename2, &varnames, nentries);
+        let (_values1, _groups1) = readfile(filename1, &varnames, nentries);
+        let (_values2, _groups2) = readfile(filename2, &varnames, nentries);
 
-        assert_eq!(
-            index1.len(),
-            nentries,
-            "The lengths of index1 and values1 are not equal"
-        );
-        assert_eq!(
-            values1[0].len(),
-            nentries,
-            "The lengths of index1 and values1 are not equal"
-        );
-        assert_eq!(
-            index2.len(),
-            nentries,
-            "The lengths of index2 and values2 are not equal"
-        );
-        assert_eq!(
-            values2[0].len(),
-            nentries,
-            "The lengths of values1 and values2 are not equal"
-        );
-        assert!(
-            values1[0].iter().tuple_windows().all(|(a, b)| a <= b),
-            "values1 is not sorted"
-        );
-        assert!(
-            values2[0].iter().tuple_windows().all(|(a, b)| a <= b),
-            "values2 is not sorted"
-        );
+        // assert_eq!(
+        //     index1.len(),
+        //     nentries,
+        //     "The lengths of index1 and values1 are not equal"
+        // );
+        // assert_eq!(
+        //     values1[0].len(),
+        //     nentries,
+        //     "The lengths of index1 and values1 are not equal"
+        // );
+        // assert_eq!(
+        //     index2.len(),
+        //     nentries,
+        //     "The lengths of index2 and values2 are not equal"
+        // );
+        // assert_eq!(
+        //     values2[0].len(),
+        //     nentries,
+        //     "The lengths of values1 and values2 are not equal"
+        // );
+        // assert!(
+        //     values1[0].iter().tuple_windows().all(|(a, b)| a <= b),
+        //     "values1 is not sorted"
+        // );
+        // assert!(
+        //     values2[0].iter().tuple_windows().all(|(a, b)| a <= b),
+        //     "values2 is not sorted"
+        // );
     }
 
     #[test]

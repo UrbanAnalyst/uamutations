@@ -2,6 +2,9 @@
 //! Analyst](https://urbananalyst.city). The algorithm mutates selected properties for one city to
 //! become more like those of another selected city.
 
+use ndarray::s;
+
+pub mod mlr;
 pub mod read_write_file;
 pub mod vector_fns;
 
@@ -42,29 +45,46 @@ pub fn uamutate(
 ) {
     let varsall: Vec<String> = vec![varname.to_string()];
     let varsall = [varsall, varextra].concat();
-    let (index1, values1, _groups1) = read_write_file::readfile(fname1, &varsall, nentries);
-    let (_index2, values2, _groups2) = read_write_file::readfile(fname2, &varsall, nentries);
+    let (mut values1, groups1) = read_write_file::readfile(fname1, &varsall, nentries);
+    let (values2, _groups2) = read_write_file::readfile(fname2, &varsall, nentries);
+
+    // Calculate MLR regression coefficients between first variables and all others:
+    let beta1 = mlr::mlr_beta(&values1);
+    let beta2 = mlr::mlr_beta(&values2);
+    // Then adjust `values1` by removing its dependence on those variable, and replacing with the
+    // dependnece of values2 on same variables:
+    let mut result = ndarray::Array1::zeros(values1.ncols());
+    for i in 0..values1.ncols() {
+        let b1 = ndarray::Array1::from(beta1.clone());
+        let b2 = ndarray::Array1::from(beta2.clone());
+        let values_slice = values1.slice(s![1.., i]).to_owned();
+        let product = &values_slice * (1.0 + &b2 - &b1);
+        result[i] = product.sum();
+    }
+    values1.row_mut(0).assign(&result);
 
     // The values are then sorted in in increasing order, and the indices map back to the original
     // order. The following line then calculates successive differences between the two sets of
     // values, where `false` is for the `absolute` parameter, so that differences are calculated
     // relative to values1.
-    let dists_sorted = vector_fns::calculate_dists(&values1, &values2, false);
+    let _dists = vector_fns::calculate_dists(&values1, &values2, false);
     // Then map those dists back onto the original order of `values1`:
-    let dists: Vec<_> = index1.iter().map(|&i| dists_sorted[i]).collect();
+    // let dists: Vec<_> = index1.iter().map(|&i| dists_sorted[i]).collect();
     // let values: Vec<_> = index1.iter().map(|&i| values1[i]).collect();
-    let groups: Vec<_> = index1.iter().map(|&i| _groups1[i]).collect();
+    // let groups: Vec<_> = index1.iter().map(|&i| _groups1[i]).collect();
+    let groups: Vec<_> = groups1;
 
     // Then aggregate 'dists' within 'groups', first by direct aggregation along with counts of
     // numbers of values aggregated within each group.
     let max_group = *groups.iter().max().unwrap();
-    let mut counts = vec![0u32; max_group + 1];
+    // let mut counts = vec![0u32; max_group + 1];
+    let counts = vec![0u32; max_group + 1];
     let mut sums = vec![0f64; max_group + 1];
 
-    for (i, &group) in groups.iter().enumerate() {
-        counts[group] += 1;
-        sums[group] += dists[i];
-    }
+    // for (i, &group) in groups.iter().enumerate() {
+    //     counts[group] += 1;
+    //     sums[group] += dists[i];
+    // }
 
     // Then convert sums to mean values by dividing by counts:
     for (sum, count) in sums.iter_mut().zip(&counts) {
