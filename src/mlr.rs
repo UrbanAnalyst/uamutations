@@ -65,3 +65,27 @@ pub fn mlr_beta(data: &Array2<f64>) -> Vec<f64> {
 
     b
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ndarray::array;
+
+    #[test]
+    fn test_mlr_beta_2_variables() {
+        let data_2 = array![[1.0, 2.0, 3.0, 4.0, 5.0], [2.1, 3.2, 4.1, 5.2, 5.9],];
+        let result_2 = mlr_beta(&data_2);
+        assert_eq!(result_2.len(), 1);
+    }
+
+    #[test]
+    fn test_mlr_beta_3_variables() {
+        let data_3 = array![
+            [1.0, 2.0, 3.0, 4.0, 5.0],
+            [2.1, 3.2, 4.1, 5.2, 5.9],
+            [3.0, 4.1, 4.9, 6.0, 7.1],
+        ];
+        let result_3 = mlr_beta(&data_3);
+        assert_eq!(result_3.len(), 2);
+    }
+}
