@@ -19,22 +19,9 @@ const OUTFILENAME: &str = "output.txt";
 ///
 /// This exists only to locally call and run the library.
 fn main() {
-    let varsall: Vec<String> = vec![VARNAME.to_string()];
+    // let varsall: Vec<String> = vec![VARNAME.to_string()];
     let varextra = vec!["natural".to_string()];
-    let varsall = [varsall, varextra].concat();
-    let (values1, _groups1) = read_write_file::readfile(FNAME1, &varsall, NENTRIES);
-    let (_values2, _groups2) = read_write_file::readfile(FNAME2, &varsall, NENTRIES);
+    // let varextra: Vec<String> = Vec::new();
 
-    use std::time::Instant;
-    let start = Instant::now();
-
-    // let _order2 = vector_order::order_vectors(&values1, &values2);
-    let _beta = mlr::mlr_beta(&values1);
-
-    let duration_dists = format!("{:.4}", start.elapsed().as_secs_f64());
-    println!("time = {}", duration_dists);
-
-    let varextra: Vec<String> = Vec::new();
-    // let varextra = vec!["natural".to_string()];
     uamutations::uamutate(FNAME1, FNAME2, VARNAME, varextra, NENTRIES, OUTFILENAME);
 }

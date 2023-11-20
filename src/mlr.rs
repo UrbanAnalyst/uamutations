@@ -32,6 +32,7 @@ use ndarray_linalg::LeastSquaresSvd;
 /// ```
 pub fn mlr_beta(data: &Array2<f64>) -> Vec<f64> {
     assert!(!data.is_empty(), "values1 must not be empty");
+    println!("------------");
     println!("data has {:?} dimensions", data.dim());
 
     // Transpose data(vars, obs) to (obs, vars):
@@ -51,6 +52,8 @@ pub fn mlr_beta(data: &Array2<f64>) -> Vec<f64> {
     let b: Vec<f64> = result.solution.to_vec();
     println!("{:?}", b);
     println!("b has {:?} length", b.len());
+    println!("------------");
+    println!();
 
     b
 }
