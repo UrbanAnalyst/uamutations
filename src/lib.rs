@@ -2,7 +2,7 @@
 //! Analyst](https://urbananalyst.city). The algorithm mutates selected properties for one city to
 //! become more like those of another selected city.
 
-use ndarray::s;
+use ndarray::{s, Array2};
 
 pub mod mlr;
 pub mod read_write_file;
@@ -48,20 +48,9 @@ pub fn uamutate(
     let (mut values1, groups1) = read_write_file::readfile(fname1, &varsall, nentries);
     let (values2, _groups2) = read_write_file::readfile(fname2, &varsall, nentries);
 
-    // Calculate MLR regression coefficients between first variables and all others:
-    let beta1 = mlr::mlr_beta(&values1);
-    let beta2 = mlr::mlr_beta(&values2);
-    // Then adjust `values1` by removing its dependence on those variable, and replacing with the
-    // dependnece of values2 on same variables:
-    let mut result = ndarray::Array1::zeros(values1.ncols());
-    for i in 0..values1.ncols() {
-        let b1 = ndarray::Array1::from(beta1.clone());
-        let b2 = ndarray::Array1::from(beta2.clone());
-        let values_slice = values1.slice(s![1.., i]).to_owned();
-        let product = &values_slice * (1.0 + &b2 - &b1);
-        result[i] = product.sum();
-    }
-    values1.row_mut(0).assign(&result);
+    // Then adjust `values1` by removing its dependence on varextra, and replacing with the
+    // dependnece of values2 on same variables. This mutates `values1`.
+    adj_for_beta(&mut values1, &values2);
 
     // The values are then sorted in in increasing order, and the indices map back to the original
     // order. The following line then calculates successive differences between the two sets of
@@ -96,6 +85,23 @@ pub fn uamutate(
     }
 
     read_write_file::write_file(&sums, outfilename);
+}
+
+fn adj_for_beta(values1: &mut Array2<f64>, values2: &Array2<f64>) {
+    // Calculate MLR regression coefficients between first variables and all others:
+    let beta1 = mlr::mlr_beta(values1);
+    let beta2 = mlr::mlr_beta(values2);
+    // Then adjust `values1` by removing its dependence on those variable, and replacing with the
+    // dependnece of values2 on same variables:
+    let mut result = ndarray::Array1::zeros(values1.ncols());
+    for i in 0..values1.ncols() {
+        let b1 = ndarray::Array1::from(beta1.clone());
+        let b2 = ndarray::Array1::from(beta2.clone());
+        let values_slice = values1.slice(s![1.., i]).to_owned();
+        let product = &values_slice * (1.0 + &b2 - &b1);
+        result[i] = product.sum();
+    }
+    values1.row_mut(0).assign(&result);
 }
 
 #[cfg(test)]
