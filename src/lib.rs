@@ -49,7 +49,7 @@ pub fn uamutate(
     let (values2, _groups2) = read_write_file::readfile(fname2, &varsall, nentries);
 
     // Then adjust `values1` by removing its dependence on varextra, and replacing with the
-    // dependnece of values2 on same variables. This mutates `values1`.
+    // dependnece of values2 on same variables.
     adj_for_beta(&mut values1, &values2);
 
     // The values are then sorted in in increasing order, and the indices map back to the original
