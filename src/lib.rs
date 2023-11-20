@@ -2,6 +2,8 @@
 //! Analyst](https://urbananalyst.city). The algorithm mutates selected properties for one city to
 //! become more like those of another selected city.
 
+use ndarray::s;
+
 pub mod mlr;
 pub mod read_write_file;
 pub mod vector_fns;
@@ -43,12 +45,23 @@ pub fn uamutate(
 ) {
     let varsall: Vec<String> = vec![varname.to_string()];
     let varsall = [varsall, varextra].concat();
-    let (values1, groups1) = read_write_file::readfile(fname1, &varsall, nentries);
+    let (mut values1, groups1) = read_write_file::readfile(fname1, &varsall, nentries);
     let (values2, _groups2) = read_write_file::readfile(fname2, &varsall, nentries);
 
     // Calculate MLR regression coefficients between first variables and all others:
-    let _b1 = mlr::mlr_beta(&values1);
-    let _b2 = mlr::mlr_beta(&values2);
+    let beta1 = mlr::mlr_beta(&values1);
+    let beta2 = mlr::mlr_beta(&values2);
+    // Then adjust `values1` by removing its dependence on those variable, and replacing with the
+    // dependnece of values2 on same variables:
+    let mut result = ndarray::Array1::zeros(values1.ncols());
+    for i in 0..values1.ncols() {
+        let b1 = ndarray::Array1::from(beta1.clone());
+        let b2 = ndarray::Array1::from(beta2.clone());
+        let values_slice = values1.slice(s![1.., i]).to_owned();
+        let product = &values_slice * (1.0 + &b2 - &b1);
+        result[i] = product.sum();
+    }
+    values1.row_mut(0).assign(&result);
 
     // The values are then sorted in in increasing order, and the indices map back to the original
     // order. The following line then calculates successive differences between the two sets of
