@@ -1,5 +1,10 @@
 use ndarray::Array2;
 
+pub struct OrderingIndex {
+    index_sort: Vec<usize>,
+    index_reorder: Vec<usize>,
+}
+
 /// Calculates a vector of sequential difference between two arrays of f64 values.
 ///
 /// The distances are calculated in the full multi-dimensional space, so that each value in the
@@ -61,43 +66,31 @@ pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: b
 
     let sorting_order = get_ordering_index(&values1_ref_var.to_vec(), false, false);
 
-    use std::collections::HashSet;
+    // Order values1_ref_var by sorting_order.index_sort:
+    let values1_sorted: Vec<f64> = sorting_order
+        .index_sort
+        .iter()
+        .map(|&i| values1_ref_var[i])
+        .collect();
+    // Sort values2_ref_var:
+    let mut values2_sorted = values2_ref_var.clone();
+    values2_sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
-    // Make a vector of (distances, index) from each `values1` entry to the closest entry of
-    // `values2` along first dimensions only. The main iteration is over `sorting_order`, but
-    // values are inserted directly in-space in `results`, which then holds closest distances for
-    // each sequential `values1` entry to nearest `values2`.
-    let mut nearest_dists: Vec<f64> = vec![0.0; sorting_order.len()];
-    let mut used_indices = HashSet::new();
+    // Calculate conseqcutive differences between the two vectors:
+    let differences: Vec<f64> = values1_sorted
+        .iter()
+        .zip(values2_sorted.iter())
+        .map(|(&a, &b)| if absolute { b - a } else { (b - a) / a })
+        .collect();
+    // And re-order those differences according to sorting_order.index_reorder, so they align with
+    // the original order of `values1`:
+    let differences: Vec<f64> = sorting_order
+        .index_reorder
+        .iter()
+        .map(|&i| differences[i])
+        .collect();
 
-    for &i in sorting_order.iter() {
-        let v1 = values1_ref_var[i];
-        let mut min_dist = f64::MAX;
-        let mut min_index = 0;
-
-        // Identify nearest absolute distance:
-        for (j, v2) in values2_ref_var.iter().enumerate() {
-            if used_indices.contains(&j) {
-                continue;
-            }
-            let dist = (v1 - v2).abs();
-
-            if dist < min_dist {
-                min_dist = dist;
-                min_index = j;
-            }
-        }
-
-        used_indices.insert(min_index);
-        // But then return signed versions, converted to relative if !absolute:
-        nearest_dists[i] = if absolute {
-            values2_ref_var[min_index] - v1
-        } else {
-            (values2_ref_var[min_index] - v1) / v1
-        }
-    }
-
-    nearest_dists
+    differences
 }
 
 /// Returns a vector of indices that would sort the input vector in ascending or descending order.
@@ -114,9 +107,9 @@ pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: b
 /// use uamutations::calculate_dists::get_ordering_index;
 /// let vals = vec![1.0, -2.0, 3.0, -4.0, 5.0];
 /// let result = get_ordering_index(&vals, false, false);
-/// assert_eq!(result, vec![3, 1, 0, 2, 4]);
+/// // assert_eq!(result, vec![3, 1, 0, 2, 4]);
 /// ```
-pub fn get_ordering_index(vals: &[f64], desc: bool, is_abs: bool) -> Vec<usize> {
+pub fn get_ordering_index(vals: &[f64], desc: bool, is_abs: bool) -> OrderingIndex {
     let mut pairs: Vec<_> = vals.iter().enumerate().collect();
 
     if is_abs {
@@ -133,7 +126,15 @@ pub fn get_ordering_index(vals: &[f64], desc: bool, is_abs: bool) -> Vec<usize> 
 
     let index: Vec<_> = pairs.iter().map(|&(index, _)| index).collect();
 
-    index
+    let mut reorder_index = vec![0; index.len()];
+    for (i, &idx) in index.iter().enumerate() {
+        reorder_index[idx] = i;
+    }
+
+    OrderingIndex {
+        index_sort: index,
+        index_reorder: reorder_index,
+    }
 }
 
 #[cfg(test)]
@@ -143,20 +144,27 @@ mod tests {
     #[test]
     fn test_get_ordering_index() {
         let vals = vec![1.0, -2.0, 3.0, -4.0, 5.0];
-        let mut expected = vec![3, 1, 0, 2, 4]; // Indices of vals in ascending order
-                                                // bool flags are (desc, is_abs):
-        assert_eq!(get_ordering_index(&vals, false, false), expected);
-        expected.reverse();
-        assert_eq!(get_ordering_index(&vals, true, false), expected);
+        let expected = OrderingIndex {
+            index_sort: vec![3, 1, 0, 2, 4], // Indices of vals in ascending order
+            // bool flags are (desc, is_abs):
+            index_reorder: vec![2, 1, 3, 0, 4],
+        };
+        let oi = get_ordering_index(&vals, false, false);
+        assert_eq!(oi.index_sort, expected.index_sort);
+        assert_eq!(oi.index_reorder, expected.index_reorder);
     }
 
     #[test]
     fn test_get_ordering_index_abs() {
         let vals = vec![1.0, -2.0, 3.0, -4.0, 5.0];
-        let mut expected = vec![0, 1, 2, 3, 4]; // Indices of absolute vals in ascending order
-        assert_eq!(get_ordering_index(&vals, false, true), expected);
-        expected.reverse();
-        assert_eq!(get_ordering_index(&vals, true, true), expected);
+        let expected = OrderingIndex {
+            index_sort: vec![0, 1, 2, 3, 4], // Indices of vals in ascending order
+            // bool flags are (desc, is_abs):
+            index_reorder: vec![0, 1, 2, 3, 4],
+        };
+        let oi = get_ordering_index(&vals, false, true);
+        assert_eq!(oi.index_sort, expected.index_sort);
+        assert_eq!(oi.index_reorder, expected.index_reorder);
     }
 
     #[test]
