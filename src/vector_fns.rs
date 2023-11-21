@@ -175,6 +175,8 @@ mod tests {
 
     #[test]
     fn test_calculate_dists_absolute() {
+        // Note that 2.0 is closest to 2.0, but is matched to 3.0 because of sequential and unique
+        // matching.
         let values1 = ndarray::array![[1.0, 2.0, 4.0, 5.0]];
         let values2 = ndarray::array![[7.0, 9.0, 3.0, 2.0]];
         let result = calculate_dists(&values1, &values2, true);
