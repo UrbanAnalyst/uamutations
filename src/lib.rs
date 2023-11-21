@@ -52,28 +52,23 @@ pub fn uamutate(
     // dependnece of values2 on same variables.
     adj_for_beta(&mut values1, &values2);
 
-    // The values are then sorted in in increasing order, and the indices map back to the original
-    // order. The following line then calculates successive differences between the two sets of
-    // values, where `false` is for the `absolute` parameter, so that differences are calculated
-    // relative to values1.
-    let _dists = vector_fns::calculate_dists(&values1, &values2, false);
-    // Then map those dists back onto the original order of `values1`:
-    // let dists: Vec<_> = index1.iter().map(|&i| dists_sorted[i]).collect();
-    // let values: Vec<_> = index1.iter().map(|&i| values1[i]).collect();
-    // let groups: Vec<_> = index1.iter().map(|&i| _groups1[i]).collect();
+    // Then calculate successive differences between the two sets of values, where `false` is for
+    // the `absolute` parameter, so that differences are calculated relative to values1. These are
+    // then the distances by which `values1` need to be moved in the first dimension only to match
+    // the closest equivalent values of `values21`.
+    let dists = vector_fns::calculate_dists(&values1, &values2, false);
+    // Then aggregate these relative distances within the groups defined in the original `groups1`
+    // vector, first by direct aggregation along with counts of numbers of values aggregated within
+    // each group.
     let groups: Vec<_> = groups1;
-
-    // Then aggregate 'dists' within 'groups', first by direct aggregation along with counts of
-    // numbers of values aggregated within each group.
     let max_group = *groups.iter().max().unwrap();
-    // let mut counts = vec![0u32; max_group + 1];
-    let counts = vec![0u32; max_group + 1];
+    let mut counts = vec![0u32; max_group + 1];
     let mut sums = vec![0f64; max_group + 1];
 
-    // for (i, &group) in groups.iter().enumerate() {
-    //     counts[group] += 1;
-    //     sums[group] += dists[i];
-    // }
+    for (i, &group) in groups.iter().enumerate() {
+        counts[group] += 1;
+        sums[group] += dists[i];
+    }
 
     // Then convert sums to mean values by dividing by counts:
     for (sum, count) in sums.iter_mut().zip(&counts) {
