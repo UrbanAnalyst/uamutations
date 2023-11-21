@@ -4,8 +4,9 @@ use ndarray::{s, Array2};
 ///
 /// # Arguments
 ///
-/// * `values1` - The first vector of f64 values.
-/// * `values2` - The second vector of f64 values.
+/// * `values1` - An Array2 object which provides the reference values against which to sort
+/// `values2`.
+/// * `values2` - An Array2 object which is to be sorted against `values1`.
 /// * `absolute` - A boolean indicating whether to calculate absolute differences.
 ///
 /// # Panics
