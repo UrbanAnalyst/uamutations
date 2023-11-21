@@ -57,30 +57,7 @@ pub fn uamutate(
     // then the distances by which `values1` need to be moved in the first dimension only to match
     // the closest equivalent values of `values21`.
     let dists = vector_fns::calculate_dists(&values1, &values2, false);
-    // Then aggregate these relative distances within the groups defined in the original `groups1`
-    // vector, first by direct aggregation along with counts of numbers of values aggregated within
-    // each group.
-    let groups: Vec<_> = groups1;
-    let max_group = *groups.iter().max().unwrap();
-    let mut counts = vec![0u32; max_group + 1];
-    let mut sums = vec![0f64; max_group + 1];
-
-    for (i, &group) in groups.iter().enumerate() {
-        counts[group] += 1;
-        sums[group] += dists[i];
-    }
-
-    // Then convert sums to mean values by dividing by counts:
-    for (sum, count) in sums.iter_mut().zip(&counts) {
-        *sum = if *count != 0 {
-            *sum / *count as f64
-        } else {
-            0.0
-        };
-    }
-
-    // First value of `sums` is junk because `groups` are 1-based R values:
-    sums.remove(0);
+    let sums = aggregate_to_groups(&dists, &groups1);
 
     read_write_file::write_file(&sums, outfilename);
 }
@@ -124,6 +101,39 @@ fn adj_for_beta(values1: &mut Array2<f64>, values2: &Array2<f64>) {
         result[i] = product.sum();
     }
     values1.row_mut(0).assign(&result);
+}
+
+/// Aggregate distances within the groups defined in the original `groups` vector.
+///
+/// # Arguments
+///
+/// * `dists` - A vector of distances between entries in `values1` and closest values in `values2`.
+/// * `groups` - A vector of same length as `dists`, with 1-based indices of group numbers. There
+/// will generally be far fewer unique groups as there are entries in `dists`.
+fn aggregate_to_groups(dists: &[f64], groups: &[usize]) -> Vec<f64> {
+    let groups_out: Vec<_> = groups.to_vec();
+    let max_group = *groups_out.iter().max().unwrap();
+    let mut counts = vec![0u32; max_group + 1];
+    let mut sums = vec![0f64; max_group + 1];
+
+    for (i, &group) in groups_out.iter().enumerate() {
+        counts[group] += 1;
+        sums[group] += dists[i];
+    }
+
+    // Then convert sums to mean values by dividing by counts:
+    for (sum, count) in sums.iter_mut().zip(&counts) {
+        *sum = if *count != 0 {
+            *sum / *count as f64
+        } else {
+            0.0
+        };
+    }
+
+    // First value of `sums` is junk because `groups` are 1-based R values:
+    sums.remove(0);
+
+    sums
 }
 
 #[cfg(test)]
