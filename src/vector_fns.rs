@@ -58,13 +58,15 @@ pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: b
 
     let values1_clone = values1.t().to_owned();
     let values2_clone = values2.t().to_owned();
-    let _sorting_order = get_ordering_index(&values1_clone.column(0).to_vec(), false, false);
+    let sorting_order = get_ordering_index(&values1_clone.column(0).to_vec(), false, false);
 
     // Make a vector of (distances, index) from each `values1` entry to the closest entry of
-    // `values2` in the multi-dimensional space defined by each array.
-    let mut results: Vec<Option<usize>> = vec![None; _sorting_order.len()];
+    // `values2` in the multi-dimensional space defined by each array. The main iteration is over
+    // `sorting_order`, but values are inserted directly in-space in `results`, which then holds
+    // indices matching each entry in `values1` to closest entries in `values2`.
+    let mut results: Vec<Option<usize>> = vec![None; sorting_order.len()];
 
-    for &i in _sorting_order.iter() {
+    for &i in sorting_order.iter() {
         let v1 = values1_clone.row(i).to_owned();
         let mut min_dist = f64::MAX;
         let mut min_index = 0;
