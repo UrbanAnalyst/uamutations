@@ -3,10 +3,11 @@
 //! become more like those of another selected city.
 
 use ndarray::{s, Array2};
+use std::time::Instant;
 
+pub mod calculate_dists;
 pub mod mlr;
 pub mod read_write_file;
-pub mod vector_fns;
 
 /// This is the main function, which reads data from two JSON files, calculates absolute and
 /// relative differences between the two sets of data, and writes the results to an output file.
@@ -51,16 +52,28 @@ pub fn uamutate(
 
     // Then adjust `values1` by removing its dependence on varextra, and replacing with the
     // dependnece of values2 on same variables (but only if `varextra` are specified):
+    let start = Instant::now();
     if num_varextra > 0 {
         adj_for_beta(&mut values1, &values2);
     }
+    println!("Time elapsed in adj_for_beta() is: {:?}", start.elapsed());
 
     // Then calculate successive differences between the two sets of values, where `false` is for
     // the `absolute` parameter, so that differences are calculated relative to values1. These are
     // then the distances by which `values1` need to be moved in the first dimension only to match
     // the closest equivalent values of `values21`.
-    let dists = vector_fns::calculate_dists(&values1, &values2, false);
+    let start = Instant::now();
+    let dists = calculate_dists::calculate_dists(&values1, &values2, false);
+    println!(
+        "Time elapsed in calculate_dists() is: {:?}",
+        start.elapsed()
+    );
+    let start = Instant::now();
     let sums = aggregate_to_groups(&dists, &groups1);
+    println!(
+        "Time elapsed in aggregate_to_groups() is: {:?}",
+        start.elapsed()
+    );
 
     read_write_file::write_file(&sums, outfilename);
 }

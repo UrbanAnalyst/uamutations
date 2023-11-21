@@ -37,7 +37,7 @@ use ndarray::Array2;
 /// # Example
 ///
 /// ```
-/// use uamutations::vector_fns::calculate_dists;
+/// use uamutations::calculate_dists::calculate_dists;
 /// let values1 = ndarray::array![[1.0, 2.0, 4.0, 5.0]];
 /// let values2 = ndarray::array![[7.0, 9.0, 3.0, 2.0]];
 /// let result = calculate_dists(&values1, &values2, true);
@@ -111,7 +111,7 @@ pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: b
 /// # Example
 ///
 /// ```
-/// use uamutations::vector_fns::get_ordering_index;
+/// use uamutations::calculate_dists::get_ordering_index;
 /// let vals = vec![1.0, -2.0, 3.0, -4.0, 5.0];
 /// let result = get_ordering_index(&vals, false, false);
 /// assert_eq!(result, vec![3, 1, 0, 2, 4]);
