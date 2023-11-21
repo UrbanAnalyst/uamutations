@@ -79,6 +79,9 @@ pub fn uamutate(
         };
     }
 
+    // First value of `sums` is junk because `groups` are 1-based R values:
+    sums.remove(0);
+
     read_write_file::write_file(&sums, outfilename);
 }
 
