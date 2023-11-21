@@ -58,6 +58,7 @@ pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: b
 
     let values1_clone = values1.t().to_owned();
     let values2_clone = values2.t().to_owned();
+    let _sorting_order = get_ordering_index(&values1_clone.row(0).to_vec(), false, false);
 
     // Make a vector of (distances, index) from each `values1` entry to the closest entry of
     // `values2` in the multi-dimensional space defined by each array.
@@ -102,11 +103,12 @@ pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: b
     final_results
 }
 
-/// Returns a vector of indices that would sort the input vector in descending order.
+/// Returns a vector of indices that would sort the input vector in ascending or descending order.
 ///
 /// # Arguments
 ///
 /// * `vals` - A slice of f64 values to be sorted.
+/// * `desc` - If `true`, sort in descending order; otherwise sort in ascensing order.
 /// * `is_abs` - A boolean indicating whether sorting should be based on absolute values.
 ///
 /// # Example
@@ -114,16 +116,22 @@ pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: b
 /// ```
 /// use uamutations::vector_fns::get_ordering_index;
 /// let vals = vec![1.0, -2.0, 3.0, -4.0, 5.0];
-/// let result = get_ordering_index(&vals, false);
-/// assert_eq!(result, vec![4, 2, 0, 1, 3]);
+/// let result = get_ordering_index(&vals, false, false);
+/// assert_eq!(result, vec![3, 1, 0, 2, 4]);
 /// ```
-pub fn get_ordering_index(vals: &[f64], is_abs: bool) -> Vec<usize> {
+pub fn get_ordering_index(vals: &[f64], desc: bool, is_abs: bool) -> Vec<usize> {
     let mut pairs: Vec<_> = vals.iter().enumerate().collect();
 
     if is_abs {
-        pairs.sort_by(|&(_, a), &(_, b)| b.abs().partial_cmp(&a.abs()).unwrap());
-    } else {
+        if desc {
+            pairs.sort_by(|&(_, a), &(_, b)| b.abs().partial_cmp(&a.abs()).unwrap());
+        } else {
+            pairs.sort_by(|&(_, a), &(_, b)| a.abs().partial_cmp(&b.abs()).unwrap());
+        }
+    } else if desc {
         pairs.sort_by(|&(_, a), &(_, b)| b.partial_cmp(a).unwrap());
+    } else {
+        pairs.sort_by(|&(_, a), &(_, b)| a.partial_cmp(b).unwrap());
     }
 
     let index: Vec<_> = pairs.iter().map(|&(index, _)| index).collect();
@@ -138,15 +146,20 @@ mod tests {
     #[test]
     fn test_get_ordering_index() {
         let vals = vec![1.0, -2.0, 3.0, -4.0, 5.0];
-        let expected = vec![4, 2, 0, 1, 3]; // Indices of vals in descending order
-        assert_eq!(get_ordering_index(&vals, false), expected);
+        let mut expected = vec![3, 1, 0, 2, 4]; // Indices of vals in ascending order
+                                                // bool flags are (desc, is_abs):
+        assert_eq!(get_ordering_index(&vals, false, false), expected);
+        expected.reverse();
+        assert_eq!(get_ordering_index(&vals, true, false), expected);
     }
 
     #[test]
     fn test_get_ordering_index_abs() {
         let vals = vec![1.0, -2.0, 3.0, -4.0, 5.0];
-        let expected = vec![4, 3, 2, 1, 0]; // Indices of absolute vals in descending order
-        assert_eq!(get_ordering_index(&vals, true), expected);
+        let mut expected = vec![0, 1, 2, 3, 4]; // Indices of absolute vals in ascending order
+        assert_eq!(get_ordering_index(&vals, false, true), expected);
+        expected.reverse();
+        assert_eq!(get_ordering_index(&vals, true, true), expected);
     }
 
     #[test]
