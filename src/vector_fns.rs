@@ -39,14 +39,14 @@ use ndarray::{s, Array2};
 /// ```
 /// use uamutations::vector_fns::calculate_dists;
 /// let values1 = ndarray::array![[1.0, 2.0, 4.0, 5.0]];
-/// let values2 = ndarray::array![[2.0, 3.0, 7.0, 9.0]];
+/// let values2 = ndarray::array![[7.0, 9.0, 3.0, 2.0]];
 /// let result = calculate_dists(&values1, &values2, true);
 /// // For each values1, result will be (v2 - v1) for closest values2. So closest value to v1[3] =
 /// // 4, for example, is v2 = 3, and (v2 - v1) = 3 - 4 = -1. Or v1[4] = 5, with closest of 3, and
 /// // 3 - 5 = -2.
-/// assert_eq!(result, vec![1.0, 0.0, -1.0, -2.0]);
+/// assert_eq!(result, vec![1.0, 1.0, 3.0, 4.0]);
 /// let result = calculate_dists(&values1, &values2, false);
-/// assert_eq!(result, vec![1.0, 0.0, -0.25, -0.4]);
+/// assert_eq!(result, vec![1.0, 0.5, 0.75, 0.8]);
 /// ```
 pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: bool) -> Vec<f64> {
     assert!(!values1.is_empty(), "values1 must not be empty");
@@ -60,11 +60,14 @@ pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: b
     let values2_clone = values2.t().to_owned();
     let sorting_order = get_ordering_index(&values1_clone.column(0).to_vec(), false, false);
 
+    use std::collections::HashSet;
+
     // Make a vector of (distances, index) from each `values1` entry to the closest entry of
     // `values2` in the multi-dimensional space defined by each array. The main iteration is over
     // `sorting_order`, but values are inserted directly in-space in `results`, which then holds
     // indices matching each entry in `values1` to closest entries in `values2`.
     let mut results: Vec<Option<usize>> = vec![None; sorting_order.len()];
+    let mut used_indices = HashSet::new();
 
     for &i in sorting_order.iter() {
         let v1 = values1_clone.row(i).to_owned();
@@ -72,6 +75,9 @@ pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: b
         let mut min_index = 0;
 
         for (j, v2) in values2_clone.outer_iter().enumerate() {
+            if used_indices.contains(&j) {
+                continue;
+            }
             let dist = v1
                 .iter()
                 .zip(v2.iter())
@@ -85,6 +91,7 @@ pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: b
             }
         }
 
+        used_indices.insert(min_index);
         results[i] = Some(min_index);
     }
 
@@ -169,16 +176,16 @@ mod tests {
     #[test]
     fn test_calculate_dists_absolute() {
         let values1 = ndarray::array![[1.0, 2.0, 4.0, 5.0]];
-        let values2 = ndarray::array![[2.0, 3.0, 7.0, 9.0]];
+        let values2 = ndarray::array![[7.0, 9.0, 3.0, 2.0]];
         let result = calculate_dists(&values1, &values2, true);
-        assert_eq!(result, vec![1.0, 0.0, -1.0, -2.0]);
+        assert_eq!(result, vec![1.0, 1.0, 3.0, 4.0]);
     }
 
     #[test]
     fn test_calculate_dists_relative() {
         let values1 = ndarray::array![[1.0, 2.0, 4.0, 5.0]];
-        let values2 = ndarray::array![[2.0, 3.0, 7.0, 9.0]];
+        let values2 = ndarray::array![[7.0, 9.0, 3.0, 2.0]];
         let result = calculate_dists(&values1, &values2, false);
-        assert_eq!(result, vec![1.0, 0.0, -0.25, -0.4]);
+        assert_eq!(result, vec![1.0, 0.5, 0.75, 0.8]);
     }
 }
