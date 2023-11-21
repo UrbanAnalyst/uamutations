@@ -1,4 +1,4 @@
-use ndarray::{s, Array2};
+use ndarray::Array2;
 
 /// Calculates a vector of sequential difference between two arrays of f64 values.
 ///
@@ -56,34 +56,31 @@ pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: b
         "values1 and values2 must have the same dimensions."
     );
 
-    let values1_clone = values1.t().to_owned();
-    let values2_clone = values2.t().to_owned();
-    let sorting_order = get_ordering_index(&values1_clone.column(0).to_vec(), false, false);
+    let values1_ref_var: Vec<f64> = values1.row(0).to_vec();
+    let values2_ref_var: Vec<f64> = values2.row(0).to_vec();
+
+    let sorting_order = get_ordering_index(&values1_ref_var.to_vec(), false, false);
 
     use std::collections::HashSet;
 
     // Make a vector of (distances, index) from each `values1` entry to the closest entry of
-    // `values2` in the multi-dimensional space defined by each array. The main iteration is over
-    // `sorting_order`, but values are inserted directly in-space in `results`, which then holds
-    // indices matching each entry in `values1` to closest entries in `values2`.
-    let mut results: Vec<Option<usize>> = vec![None; sorting_order.len()];
+    // `values2` along first dimensions only. The main iteration is over `sorting_order`, but
+    // values are inserted directly in-space in `results`, which then holds closest distances for
+    // each sequential `values1` entry to nearest `values2`.
+    let mut nearest_dists: Vec<f64> = vec![0.0; sorting_order.len()];
     let mut used_indices = HashSet::new();
 
     for &i in sorting_order.iter() {
-        let v1 = values1_clone.row(i).to_owned();
+        let v1 = values1_ref_var[i];
         let mut min_dist = f64::MAX;
         let mut min_index = 0;
 
-        for (j, v2) in values2_clone.outer_iter().enumerate() {
+        // Identify nearest absolute distance:
+        for (j, v2) in values2_ref_var.iter().enumerate() {
             if used_indices.contains(&j) {
                 continue;
             }
-            let dist = v1
-                .iter()
-                .zip(v2.iter())
-                .map(|(&a, &b)| (a - b).powi(2))
-                .sum::<f64>()
-                .sqrt();
+            let dist = (v1 - v2).abs();
 
             if dist < min_dist {
                 min_dist = dist;
@@ -92,26 +89,15 @@ pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: b
         }
 
         used_indices.insert(min_index);
-        results[i] = Some(min_index);
-    }
-
-    // Then calculate final distances from each item in the first dimension of `values1` to the
-    // first dimension of `values2` of the item which is closest in the full multi-dimensional
-    // space.
-    let mut final_results: Vec<f64> = Vec::new();
-
-    for (&min_index_option, v1) in results.iter().zip(values1_clone.outer_iter()) {
-        let min_index = min_index_option.unwrap();
-        let v2 = values2_clone.slice(s![min_index, ..]);
-        let dist = if absolute {
-            v2[0] - v1[0]
+        // But then return signed versions, converted to relative if !absolute:
+        nearest_dists[i] = if absolute {
+            values2_ref_var[min_index] - v1
         } else {
-            (v2[0] - v1[0]) / v1[0]
-        };
-        final_results.push(dist);
+            (values2_ref_var[min_index] - v1) / v1
+        }
     }
 
-    final_results
+    nearest_dists
 }
 
 /// Returns a vector of indices that would sort the input vector in ascending or descending order.
