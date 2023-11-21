@@ -58,13 +58,15 @@ pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: b
 
     let values1_clone = values1.t().to_owned();
     let values2_clone = values2.t().to_owned();
-    let _sorting_order = get_ordering_index(&values1_clone.row(0).to_vec(), false, false);
+    let _sorting_order = get_ordering_index(&values1_clone.column(0).to_vec(), false, false);
 
     // Make a vector of (distances, index) from each `values1` entry to the closest entry of
     // `values2` in the multi-dimensional space defined by each array.
-    let mut results: Vec<usize> = Vec::new();
+    let mut results: Vec<Option<usize>> = vec![None; _sorting_order.len()];
 
-    for v1 in values1_clone.outer_iter() {
+    // for v1 in values1_clone.outer_iter() {
+    for &i in _sorting_order.iter() {
+        let v1 = values1_clone.row(i).to_owned();
         let mut min_dist = f64::MAX;
         let mut min_index = 0;
 
@@ -82,7 +84,7 @@ pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: b
             }
         }
 
-        results.push(min_index);
+        results[i] = Some(min_index);
     }
 
     // Then calculate final distances from each item in the first dimension of `values1` to the
@@ -90,7 +92,8 @@ pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: b
     // space.
     let mut final_results: Vec<f64> = Vec::new();
 
-    for (&min_index, v1) in results.iter().zip(values1_clone.outer_iter()) {
+    for (&min_index_option, v1) in results.iter().zip(values1_clone.outer_iter()) {
+        let min_index = min_index_option.unwrap();
         let v2 = values2_clone.slice(s![min_index, ..]);
         let dist = if absolute {
             v2[0] - v1[0]
