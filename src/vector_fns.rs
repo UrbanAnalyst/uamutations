@@ -64,7 +64,6 @@ pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: b
     // `values2` in the multi-dimensional space defined by each array.
     let mut results: Vec<Option<usize>> = vec![None; _sorting_order.len()];
 
-    // for v1 in values1_clone.outer_iter() {
     for &i in _sorting_order.iter() {
         let v1 = values1_clone.row(i).to_owned();
         let mut min_dist = f64::MAX;
