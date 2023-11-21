@@ -1,6 +1,20 @@
 use ndarray::{s, Array2};
 
-/// Calculates a vector of sequential difference between two vectors of f64 values.
+/// Calculates a vector of sequential difference between two arrays of f64 values.
+///
+/// The distances are calculated in the full multi-dimensional space, so that each value in the
+/// first array (`values1`) is matched to the entry in `values2` at the minimal distance. Each
+/// element of `values2` is matched to one unique element of `values1`. Unique matching is done
+/// with a hash map, meaning that the procedure only works consistently if started from some
+/// extreme point of the `values1` distribution. This extreme point is taken as the lowest value of
+/// the first column of `values1`. Alternatives to this include calculating a multiple linear
+/// regression between the first column of `values1` and all columns of `values2`, and taking the
+/// first point of that, but that will by definition be the lowest (or possibly highest) value of
+/// `values1` anyway.
+///
+/// This consideration means that `values1` can first be sorted by the first column, these sorted
+/// values used to find closest values of `values2`, and then the original order restored to yield
+/// the final desired matching.
 ///
 /// # Arguments
 ///
@@ -12,13 +26,13 @@ use ndarray::{s, Array2};
 /// # Panics
 ///
 /// This function will panic if `values1` is empty or if `values1` and `values2` have different
-/// lengths.
+/// dimensions.
 ///
 /// # Returns
 ///
-/// A vector of f64 values representing the sequential differences between `values1` and `values2`.
-/// If `absolute` is true, the differences are absolute values. Otherwise, the differences are
-/// differences relative to `values1`.
+/// A vector of `usize` values matching each consecutive element in `values1` to the closest
+/// elements in `values2`.  If `absolute` is true, the differences are absolute values. Otherwise,
+/// the differences are differences relative to `values1`.
 ///
 /// # Example
 ///
