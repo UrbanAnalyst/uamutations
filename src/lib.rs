@@ -5,7 +5,6 @@
 pub mod calculate_dists;
 pub mod mlr;
 pub mod read_write_file;
-pub mod standardise_arrays;
 
 /// This is the main function, which reads data from two JSON files, calculates absolute and
 /// relative differences between the two sets of data, and writes the results to an output file.
@@ -46,8 +45,10 @@ pub fn uamutate(
     let num_varextra = varextra.len();
     let varsall = [varsall, varextra].concat();
     let (mut values1, groups1) = read_write_file::readfile(fname1, &varsall, nentries);
-    let (values2, _groups2) = read_write_file::readfile(fname2, &varsall, nentries);
+    let (mut values2, _groups2) = read_write_file::readfile(fname2, &varsall, nentries);
 
+    // standardise inputs to same scales for each variables:
+    mlr::standardise_arrays(&mut values1, &mut values2);
     // Then adjust `values1` by removing its dependence on varextra, and replacing with the
     // dependnece of values2 on same variables (but only if `varextra` are specified):
     if num_varextra > 0 {
