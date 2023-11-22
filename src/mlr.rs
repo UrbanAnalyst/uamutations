@@ -67,10 +67,7 @@ pub fn mlr_beta(data: &Array2<f64>) -> Vec<f64> {
 /// A tuple of (Array2<f64>, Array2<f64>) containing transformed versions of both input arrays,
 /// where each variable in each array is transformed to the mutual scale defined by mean and
 /// standard devisions of all observations of both values1 and values2 for that variable.
-pub fn standardise_arrays(
-    values1: &Array2<f64>,
-    values2: &Array2<f64>,
-) -> (Array2<f64>, Array2<f64>) {
+pub fn standardise_arrays(values1: &mut Array2<f64>, values2: &mut Array2<f64>) {
     let sum_values1: ndarray::Array1<f64> = values1.axis_iter(Axis(0)).map(|v| v.sum()).collect();
     let sum_values2: ndarray::Array1<f64> = values2.axis_iter(Axis(0)).map(|v| v.sum()).collect();
     let sum_values: ndarray::Array1<f64> = &sum_values1 + &sum_values2;
@@ -91,9 +88,6 @@ pub fn standardise_arrays(
     let std_devs: ndarray::Array1<f64> =
         ((&sum_values_sq / nobs) - (&sum_values / nobs).mapv(|x| x.powi(2))).mapv(f64::sqrt);
 
-    let mut values1 = values1.clone();
-    let mut values2 = values2.clone();
-
     // Transform values:
     for (i, (&mean, &std_dev)) in mean_vals.iter().zip(std_devs.iter()).enumerate() {
         values1
@@ -103,8 +97,6 @@ pub fn standardise_arrays(
             .index_axis_mut(Axis(0), i)
             .mapv_inplace(|x| (x - mean) / std_dev);
     }
-
-    (values1, values2)
 }
 
 /// Adjusts the first row of `values1` based on the multi-linear regression coefficients of the
@@ -134,8 +126,8 @@ pub fn standardise_arrays(
 /// );
 pub fn adj_for_beta(values1: &mut Array2<f64>, values2: &Array2<f64>) {
     // Calculate MLR regression coefficients between first variables and all others:
-    let beta1 = mlr_beta(&values1);
-    let beta2 = mlr_beta(&values2);
+    let beta1 = mlr_beta(values1);
+    let beta2 = mlr_beta(values2);
     // Then adjust `values1` by removing its dependence on those variables, and replacing with the
     // dependnece of values2 on same variables:
     let mut result = ndarray::Array1::zeros(values1.ncols());
@@ -193,24 +185,27 @@ mod tests {
     fn test_standardise_arrays() {
         let values1 = array![[1.0, 2.0, 3.0, 4.0, 5.0], [2.1, 3.2, 4.1, 5.2, 5.9]];
         let values2 = array![[1.0, 2.0, 3.0, 4.0, 5.0], [3.1, 4.3, 5.3, 6.5, 7.3]];
-        let (std_values1, std_values2) = standardise_arrays(&values1, &values2);
+        let mut values1_std = values1.clone();
+        let mut values2_std = values2.clone();
+
+        standardise_arrays(&mut values1_std, &mut values2_std);
 
         // Standardising should leave first row unchanged, but reduce both mean values and standard
         // deviations of all other variables.
         for i in 0..values1.nrows() {
             // First test mean values:
-            let mean1 = values1.row(i).mean().unwrap();
-            let mean2 = values2.row(i).mean().unwrap();
-            let mean_std1 = std_values1.row(i).mean().unwrap();
-            let mean_std2 = std_values2.row(i).mean().unwrap();
+            let mean1: f64 = values1.row(i).mean().unwrap();
+            let mean2: f64 = values2.row(i).mean().unwrap();
+            let mean_std1: f64 = values1_std.row(i).mean().unwrap();
+            let mean_std2: f64 = values2_std.row(i).mean().unwrap();
             assert!(mean_std1.abs() < mean1.abs());
             assert!(mean_std2.abs() < mean2.abs());
 
             // Then standard deviations:
-            let sd1 = values1.row(i).std(1.0);
-            let sd2 = values2.row(i).std(1.0);
-            let sd_std1 = std_values1.row(i).std(1.0);
-            let sd_std2 = std_values2.row(i).std(1.0);
+            let sd1: f64 = values1.row(i).std(1.0);
+            let sd2: f64 = values2.row(i).std(1.0);
+            let sd_std1: f64 = values1_std.row(i).std(1.0);
+            let sd_std2: f64 = values2_std.row(i).std(1.0);
             assert!(sd_std1.abs() < sd1.abs());
             assert!(sd_std2.abs() < sd2.abs());
         }
