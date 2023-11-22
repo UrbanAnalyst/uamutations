@@ -94,16 +94,14 @@ pub fn standardise_arrays(
     let mut values1 = values1.clone();
     let mut values2 = values2.clone();
 
-    // Transform values, but not of first column of reference values:
+    // Transform values:
     for (i, (&mean, &std_dev)) in mean_vals.iter().zip(std_devs.iter()).enumerate() {
-        if i != 0 {
-            values1
-                .index_axis_mut(Axis(0), i)
-                .mapv_inplace(|x| (x - mean) / std_dev);
-            values2
-                .index_axis_mut(Axis(0), i)
-                .mapv_inplace(|x| (x - mean) / std_dev);
-        }
+        values1
+            .index_axis_mut(Axis(0), i)
+            .mapv_inplace(|x| (x - mean) / std_dev);
+        values2
+            .index_axis_mut(Axis(0), i)
+            .mapv_inplace(|x| (x - mean) / std_dev);
     }
 
     (values1, values2)
@@ -135,7 +133,7 @@ pub fn standardise_arrays(
 ///     "Only the first row of v1 should be different"
 /// );
 pub fn adj_for_beta(values1: &mut Array2<f64>, values2: &Array2<f64>) {
-    // standardise inputs to same scales, excluding first row/variable:
+    // standardise inputs to same scales:
     let (values1_std, values2_std) = standardise_arrays(values1, values2);
     // Calculate MLR regression coefficients between first variables and all others:
     let beta1 = mlr_beta(&values1_std);
@@ -207,26 +205,16 @@ mod tests {
             let mean2 = values2.row(i).mean().unwrap();
             let mean_std1 = std_values1.row(i).mean().unwrap();
             let mean_std2 = std_values2.row(i).mean().unwrap();
-            if i == 0 {
-                assert_eq!(mean_std1.abs(), mean1.abs());
-                assert_eq!(mean_std2.abs(), mean2.abs());
-            } else {
-                assert!(mean_std1.abs() < mean1.abs());
-                assert!(mean_std2.abs() < mean2.abs());
-            }
+            assert!(mean_std1.abs() < mean1.abs());
+            assert!(mean_std2.abs() < mean2.abs());
 
             // Then standard deviations:
             let sd1 = values1.row(i).std(1.0);
             let sd2 = values2.row(i).std(1.0);
             let sd_std1 = std_values1.row(i).std(1.0);
             let sd_std2 = std_values2.row(i).std(1.0);
-            if i == 0 {
-                assert_eq!(sd_std1.abs(), sd1.abs());
-                assert_eq!(sd_std2.abs(), sd2.abs());
-            } else {
-                assert!(sd_std1.abs() < sd1.abs());
-                assert!(sd_std2.abs() < sd2.abs());
-            }
+            assert!(sd_std1.abs() < sd1.abs());
+            assert!(sd_std2.abs() < sd2.abs());
         }
     }
 }
