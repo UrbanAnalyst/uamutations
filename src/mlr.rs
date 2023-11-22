@@ -133,11 +133,9 @@ pub fn standardise_arrays(
 ///     "Only the first row of v1 should be different"
 /// );
 pub fn adj_for_beta(values1: &mut Array2<f64>, values2: &Array2<f64>) {
-    // standardise inputs to same scales:
-    let (values1_std, values2_std) = standardise_arrays(values1, values2);
     // Calculate MLR regression coefficients between first variables and all others:
-    let beta1 = mlr_beta(&values1_std);
-    let beta2 = mlr_beta(&values2_std);
+    let beta1 = mlr_beta(&values1);
+    let beta2 = mlr_beta(&values2);
     // Then adjust `values1` by removing its dependence on those variables, and replacing with the
     // dependnece of values2 on same variables:
     let mut result = ndarray::Array1::zeros(values1.ncols());
