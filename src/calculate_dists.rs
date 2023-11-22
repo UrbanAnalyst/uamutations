@@ -152,8 +152,8 @@ pub fn get_ordering_index(vals: &[f64], desc: bool, is_abs: bool) -> OrderingInd
 /// * A sorted version of `arr2` that achieves the minimal overall difference with `arr1`.
 fn reorder_min_diff(arr1: &[f64], arr2: &[f64]) -> Vec<f64> {
     let n = arr1.len();
-    let mut dp = vec![vec![0.0; n + 1]; n + 1];
-    let mut pairs = vec![vec![(0.0, 0.0); n + 1]; n + 1];
+    let mut dp: Vec<Vec<f64>> = vec![vec![0.0; n + 1]; n + 1];
+    let mut pairs: Vec<Vec<(f64, f64)>> = vec![vec![(0.0, 0.0); n + 1]; n + 1];
 
     // Create a vector of tuples (value, original position)
     let arr1_with_pos: Vec<(f64, usize)> = arr1
@@ -180,7 +180,7 @@ fn reorder_min_diff(arr1: &[f64], arr2: &[f64]) -> Vec<f64> {
         }
     }
 
-    let mut ordered_arr2 = vec![0.0; n];
+    let mut ordered_arr2: Vec<f64> = vec![0.0; n];
     let mut i = n;
     let mut j = n;
     while i > 0 && j > 0 {
