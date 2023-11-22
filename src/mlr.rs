@@ -190,8 +190,7 @@ mod tests {
 
         standardise_arrays(&mut values1_std, &mut values2_std);
 
-        // Standardising should leave first row unchanged, but reduce both mean values and standard
-        // deviations of all other variables.
+        // Standardising should reduce both mean values and standard deviations of all variables.
         for i in 0..values1.nrows() {
             // First test mean values:
             let mean1: f64 = values1.row(i).mean().unwrap();
