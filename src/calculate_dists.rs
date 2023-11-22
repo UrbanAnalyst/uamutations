@@ -137,6 +137,61 @@ pub fn get_ordering_index(vals: &[f64], desc: bool, is_abs: bool) -> OrderingInd
     }
 }
 
+/// Order one input vector against another to acheive the minimal overal difference between them.
+///
+/// # Arguments
+///
+/// * `arr1` - A *sorted* array of f64 values
+/// * `arr2` - A *sorted* array of f64 values.
+///
+/// # Returns
+///
+/// * A sorted version of `arr2` that achieves the minimal overall difference with `arr1`.
+fn reorder_min_diff(arr1: &[f64], arr2: &[f64]) -> Vec<f64> {
+    let n = arr1.len();
+    let mut dp = vec![vec![0.0; n + 1]; n + 1];
+    let mut pairs = vec![vec![(0.0, 0.0); n + 1]; n + 1];
+
+    // Create a vector of tuples (value, original position)
+    let arr1_with_pos: Vec<(f64, usize)> = arr1
+        .iter()
+        .cloned()
+        .enumerate()
+        .map(|(i, v)| (v, i))
+        .collect();
+
+    for i in 1..=n {
+        for j in 1..=n {
+            if dp[i - 1][j - 1] + (arr1_with_pos[i - 1].0 - arr2[j - 1]).abs()
+                < f64::min(dp[i - 1][j], dp[i][j - 1])
+            {
+                dp[i][j] = dp[i - 1][j - 1] + (arr1_with_pos[i - 1].0 - arr2[j - 1]).abs();
+                pairs[i][j] = (arr1_with_pos[i - 1].0, arr2[j - 1]);
+            } else if dp[i - 1][j] < dp[i][j - 1] {
+                dp[i][j] = dp[i - 1][j];
+                pairs[i][j] = pairs[i - 1][j];
+            } else {
+                dp[i][j] = dp[i][j - 1];
+                pairs[i][j] = pairs[i][j - 1];
+            }
+        }
+    }
+
+    let mut ordered_arr2 = vec![0.0; n];
+    let mut i = n;
+    let mut j = n;
+    while i > 0 && j > 0 {
+        if pairs[i][j] != pairs[i - 1][j] {
+            // Use the recorded position to reorder ordered_arr2
+            ordered_arr2[arr1_with_pos[i - 1].1] = pairs[i][j].1;
+            j -= 1;
+        }
+        i -= 1;
+    }
+
+    ordered_arr2
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
