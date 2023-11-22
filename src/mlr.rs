@@ -57,6 +57,16 @@ pub fn mlr_beta(data: &Array2<f64>) -> Vec<f64> {
     b
 }
 
+/// Standardise two arrays of (variables, observations) to mutual scales for each variable.
+///
+/// # Arguments
+/// * `values1` - An Array2 array of (variables, observations)
+/// * `values2` - Another Array2 array of (variables, observations)
+///
+/// # Returns
+/// A tuple of (Array2<f64>, Array2<f64>) containing transformed versions of both input arrays,
+/// where each variable in each array is transformed to the mutual scale defined by mean and
+/// standard devisions of all observations of both values1 and values2 for that variable.
 pub fn standardise_arrays(
     values1: &Array2<f64>,
     values2: &Array2<f64>,
