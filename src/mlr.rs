@@ -192,4 +192,41 @@ mod tests {
             "Only the first row of v1 should be different"
         );
     }
+
+    #[test]
+    fn test_standardise_arrays() {
+        let values1 = array![[1.0, 2.0, 3.0, 4.0, 5.0], [2.1, 3.2, 4.1, 5.2, 5.9]];
+        let values2 = array![[1.0, 2.0, 3.0, 4.0, 5.0], [3.1, 4.3, 5.3, 6.5, 7.3]];
+        let (std_values1, std_values2) = standardise_arrays(&values1, &values2);
+
+        // Standardising should leave first row unchanged, but reduce both mean values and standard
+        // deviations of all other variables.
+        for i in 0..values1.nrows() {
+            // First test mean values:
+            let mean1 = values1.row(i).mean().unwrap();
+            let mean2 = values2.row(i).mean().unwrap();
+            let mean_std1 = std_values1.row(i).mean().unwrap();
+            let mean_std2 = std_values2.row(i).mean().unwrap();
+            if i == 0 {
+                assert_eq!(mean_std1.abs(), mean1.abs());
+                assert_eq!(mean_std2.abs(), mean2.abs());
+            } else {
+                assert!(mean_std1.abs() < mean1.abs());
+                assert!(mean_std2.abs() < mean2.abs());
+            }
+
+            // Then standard deviations:
+            let sd1 = values1.row(i).std(1.0);
+            let sd2 = values2.row(i).std(1.0);
+            let sd_std1 = std_values1.row(i).std(1.0);
+            let sd_std2 = std_values2.row(i).std(1.0);
+            if i == 0 {
+                assert_eq!(sd_std1.abs(), sd1.abs());
+                assert_eq!(sd_std2.abs(), sd2.abs());
+            } else {
+                assert!(sd_std1.abs() < sd1.abs());
+                assert!(sd_std2.abs() < sd2.abs());
+            }
+        }
+    }
 }
