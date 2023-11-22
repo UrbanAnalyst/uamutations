@@ -76,6 +76,9 @@ pub fn calculate_dists(values1: &Array2<f64>, values2: &Array2<f64>, absolute: b
     let mut values2_sorted = values2_ref_var.clone();
     values2_sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
+    // Re-order values2_ref_var for minimal overal diff to values1:
+    let values2_sorted: Vec<f64> = reorder_min_diff(&values1_sorted, &values2_sorted);
+
     // Calculate conseqcutive differences between the two vectors:
     let differences: Vec<f64> = values1_sorted
         .iter()
