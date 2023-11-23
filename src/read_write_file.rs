@@ -195,37 +195,29 @@ mod tests {
         // -------- test normal conditions and return values --------
         let nentries = 10;
 
-        let (_values1, _groups1) = readfile(filename1, &varnames, nentries);
-        let (_values2, _groups2) = readfile(filename2, &varnames, nentries);
+        let (values1, groups1) = readfile(filename1, &varnames, nentries);
+        let (values2, groups2) = readfile(filename2, &varnames, nentries);
 
-        // assert_eq!(
-        //     index1.len(),
-        //     nentries,
-        //     "The lengths of index1 and values1 are not equal"
-        // );
-        // assert_eq!(
-        //     values1[0].len(),
-        //     nentries,
-        //     "The lengths of index1 and values1 are not equal"
-        // );
-        // assert_eq!(
-        //     index2.len(),
-        //     nentries,
-        //     "The lengths of index2 and values2 are not equal"
-        // );
-        // assert_eq!(
-        //     values2[0].len(),
-        //     nentries,
-        //     "The lengths of values1 and values2 are not equal"
-        // );
-        // assert!(
-        //     values1[0].iter().tuple_windows().all(|(a, b)| a <= b),
-        //     "values1 is not sorted"
-        // );
-        // assert!(
-        //     values2[0].iter().tuple_windows().all(|(a, b)| a <= b),
-        //     "values2 is not sorted"
-        // );
+        assert_eq!(
+            values1.ncols(),
+            nentries,
+            "values returned from readfile have wrong number of columns."
+        );
+        assert_eq!(
+            groups1.len(),
+            nentries,
+            "The length of groups is incorrect."
+        );
+        assert_eq!(
+            values2.ncols(),
+            nentries,
+            "values returned from readfile have wrong number of columns."
+        );
+        assert_eq!(
+            groups2.len(),
+            nentries,
+            "The length of groups is incorrect."
+        );
     }
 
     #[test]
