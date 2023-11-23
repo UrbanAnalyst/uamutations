@@ -1,4 +1,4 @@
-use ndarray::{s, Array2};
+use ndarray::{s, Array2, Axis};
 use ndarray_linalg::LeastSquaresSvd;
 
 /// Calculates beta coefficients (slopes) of a multiple linear regression of dimensions [1.., _] of
@@ -97,6 +97,32 @@ pub fn adj_for_beta(values1: &mut Array2<f64>, values2: &Array2<f64>) {
         result[i] = product.sum();
     }
     values1.row_mut(0).assign(&result);
+}
+
+pub fn standardise_array(values: &Array2<f64>) -> Array2<f64> {
+    let sum_values: ndarray::Array1<f64> = values.axis_iter(Axis(0)).map(|v| v.sum()).collect();
+
+    let sum_values_sq: ndarray::Array1<f64> = values
+        .axis_iter(Axis(0))
+        .map(|v| v.mapv(|x| x.powi(2)).sum())
+        .collect();
+
+    // Calculate standard deviations:
+    let nobs = 2.0 * values.ncols() as f64;
+    let mean_vals: ndarray::Array1<f64> = &sum_values / nobs;
+    let std_devs: ndarray::Array1<f64> =
+        ((&sum_values_sq / nobs) - (&sum_values / nobs).mapv(|x| x.powi(2))).mapv(f64::sqrt);
+
+    let mut values = values.clone();
+
+    // Transform values:
+    for (i, (&mean, &std_dev)) in mean_vals.iter().zip(std_devs.iter()).enumerate() {
+        values
+            .index_axis_mut(Axis(0), i)
+            .mapv_inplace(|x| (x - mean) / std_dev);
+    }
+
+    values
 }
 
 #[cfg(test)]
