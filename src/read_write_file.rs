@@ -161,6 +161,7 @@ pub fn write_file(sums: &[f64], filename: &str) {
 
 #[cfg(test)]
 mod tests {
+    use ndarray::arr2;
     use super::*;
 
     #[test]
@@ -218,6 +219,16 @@ mod tests {
             nentries,
             "The length of groups is incorrect."
         );
+    }
+
+    #[test]
+    fn test_standardise_array() {
+        let values = arr2(&[[1.0, 2.0, 3.0, 4.0, 5.0], [6.0, 7.0, 8.0, 9.0, 10.0]]);
+        let i = 0;
+        let standardised_values = standardise_array(&values, i);
+        let expected_values = arr2(&[[-1.414213562373095, -0.7071067811865475, 0.0, 0.7071067811865475, 1.414213562373095], [6.0, 7.0, 8.0, 9.0, 10.0]]);
+                
+        assert_eq!(standardised_values, expected_values);
     }
 
     #[test]
