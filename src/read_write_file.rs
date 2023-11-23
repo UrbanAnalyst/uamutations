@@ -56,9 +56,6 @@ pub fn readfile(
 
     if let Value::Array(array) = &json {
         for item in array {
-            // if values[0].len() >= nentries {
-            //     break;
-            // }
             if let Value::Object(map) = item {
                 for (i, var) in varnames.iter().enumerate() {
                     if let Some(Value::Number(number)) = map.get(var.as_str()) {
