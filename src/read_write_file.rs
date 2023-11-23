@@ -1,8 +1,11 @@
-use ndarray::Array2;
+use ndarray::{Array2, Axis};
 use serde_json::Value;
 use std::fs::File;
 use std::io::BufReader;
 use std::io::Write;
+
+// Define columns to standardise on reading:
+const COLS_TO_STD: [&str; 1] = ["social_index"];
 
 /// Reads a JSON file and returns a tuple of two vectors: one for the indices and one for the
 /// values.
@@ -54,12 +57,16 @@ pub fn readfile(
     let mut var_exists = vec![false; varnames.len()];
     let mut current_positions = vec![0; varnames.len()];
 
+    let mut std_index: Vec<usize> = vec![];
     if let Value::Array(array) = &json {
         for item in array {
             if let Value::Object(map) = item {
                 for (i, var) in varnames.iter().enumerate() {
                     if let Some(Value::Number(number)) = map.get(var.as_str()) {
                         var_exists[i] = true;
+                        if current_positions[i] == 0 && COLS_TO_STD.contains(&var.as_str()) {
+                            std_index.push(i);
+                        }
                         if let Some(number) = number.as_f64() {
                             if current_positions[i] < nentries {
                                 values[[i, current_positions[i]]] = number;
@@ -79,6 +86,12 @@ pub fn readfile(
         }
     }
 
+    if !std_index.is_empty() {
+        for i in &std_index {
+            standardise_array(&mut values, *i);
+        }
+    }
+
     for (i, exists) in var_exists.iter().enumerate() {
         assert!(
             *exists,
@@ -92,6 +105,34 @@ pub fn readfile(
     );
 
     (values, city_group)
+}
+
+/// Standarise one column of an array to z-scores. Column in standardised in-place.
+///
+/// This is used for social variables, which need to be standardised in order to have comparable
+/// beta coefficients for the MLR routines.
+///
+/// # Arguments
+/// * `values` - The array to be standarised.
+/// * `i` - The index of the column to be standarised.
+///
+/// # Returns
+/// The standarised array.
+pub fn standardise_array(values: &mut Array2<f64>, i: usize) {
+    let sum_values: f64 = values.index_axis(Axis(0), i).sum();
+
+    let sum_values_sq: f64 = values.index_axis(Axis(0), i).mapv(|x| x.powi(2)).sum();
+
+    // Calculate standard deviations:
+    let nobs = values.ncols() as f64;
+    let mean_val: f64 = sum_values / nobs;
+    let std_dev: f64 =
+        ((sum_values_sq / nobs - (sum_values / nobs).powi(2)) * nobs / (nobs - 1.0)).sqrt();
+
+    // Transform values:
+    values
+        .index_axis_mut(Axis(0), i)
+        .mapv_inplace(|x| (x - mean_val) / std_dev);
 }
 
 /// Writes the mean mutation values to a file.
@@ -118,6 +159,8 @@ pub fn write_file(sums: &[f64], filename: &str) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use approx::assert_abs_diff_eq;
+    use ndarray::arr2;
 
     #[test]
     fn test_readfile() {
@@ -151,37 +194,44 @@ mod tests {
         // -------- test normal conditions and return values --------
         let nentries = 10;
 
-        let (_values1, _groups1) = readfile(filename1, &varnames, nentries);
-        let (_values2, _groups2) = readfile(filename2, &varnames, nentries);
+        let (values1, groups1) = readfile(filename1, &varnames, nentries);
+        let (values2, groups2) = readfile(filename2, &varnames, nentries);
 
-        // assert_eq!(
-        //     index1.len(),
-        //     nentries,
-        //     "The lengths of index1 and values1 are not equal"
-        // );
-        // assert_eq!(
-        //     values1[0].len(),
-        //     nentries,
-        //     "The lengths of index1 and values1 are not equal"
-        // );
-        // assert_eq!(
-        //     index2.len(),
-        //     nentries,
-        //     "The lengths of index2 and values2 are not equal"
-        // );
-        // assert_eq!(
-        //     values2[0].len(),
-        //     nentries,
-        //     "The lengths of values1 and values2 are not equal"
-        // );
-        // assert!(
-        //     values1[0].iter().tuple_windows().all(|(a, b)| a <= b),
-        //     "values1 is not sorted"
-        // );
-        // assert!(
-        //     values2[0].iter().tuple_windows().all(|(a, b)| a <= b),
-        //     "values2 is not sorted"
-        // );
+        assert_eq!(
+            values1.ncols(),
+            nentries,
+            "values returned from readfile have wrong number of columns."
+        );
+        assert_eq!(
+            groups1.len(),
+            nentries,
+            "The length of groups is incorrect."
+        );
+        assert_eq!(
+            values2.ncols(),
+            nentries,
+            "values returned from readfile have wrong number of columns."
+        );
+        assert_eq!(
+            groups2.len(),
+            nentries,
+            "The length of groups is incorrect."
+        );
+    }
+
+    #[test]
+    fn test_standardise_array() {
+        let mut values = arr2(&[[1.0, 2.0, 3.0, 4.0, 5.0], [6.0, 7.0, 8.0, 9.0, 10.0]]);
+        let i = 0;
+        standardise_array(&mut values, i);
+        let expected_values = arr2(&[
+            [-1.2649, -0.6325, 0.0, 0.6325, 1.2649],
+            [6.0, 7.0, 8.0, 9.0, 10.0],
+        ]);
+
+        for (a, b) in values.iter().zip(expected_values.iter()) {
+            assert_abs_diff_eq!(a, b, epsilon = 1e-4);
+        }
     }
 
     #[test]
