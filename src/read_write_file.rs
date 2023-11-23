@@ -88,7 +88,7 @@ pub fn readfile(
 
     if !std_index.is_empty() {
         for i in &std_index {
-            values = standardise_array(&values, *i);
+            standardise_array(&mut values, *i);
         }
     }
 
@@ -107,7 +107,7 @@ pub fn readfile(
     (values, city_group)
 }
 
-/// Standarise one column of an array to z-scores.
+/// Standarise one column of an array to z-scores. Column in standardised in-place.
 ///
 /// This is used for social variables, which need to be standardised in order to have comparable
 /// beta coefficients for the MLR routines.
@@ -118,7 +118,7 @@ pub fn readfile(
 ///
 /// # Returns
 /// The standarised array.
-pub fn standardise_array(values: &Array2<f64>, i: usize) -> Array2<f64> {
+pub fn standardise_array(values: &mut Array2<f64>, i: usize) {
     let sum_values: f64 = values.index_axis(Axis(0), i).sum();
 
     let sum_values_sq: f64 = values.index_axis(Axis(0), i).mapv(|x| x.powi(2)).sum();
@@ -126,16 +126,13 @@ pub fn standardise_array(values: &Array2<f64>, i: usize) -> Array2<f64> {
     // Calculate standard deviations:
     let nobs = values.ncols() as f64;
     let mean_val: f64 = sum_values / nobs;
-    let std_dev: f64 = ((sum_values_sq / nobs) - (sum_values / nobs).powi(2)).sqrt();
-
-    let mut values = values.clone();
+    let std_dev: f64 =
+        ((sum_values_sq / nobs - (sum_values / nobs).powi(2)) * nobs / (nobs - 1.0)).sqrt();
 
     // Transform values:
     values
         .index_axis_mut(Axis(0), i)
         .mapv_inplace(|x| (x - mean_val) / std_dev);
-
-    values
 }
 
 /// Writes the mean mutation values to a file.
@@ -161,8 +158,9 @@ pub fn write_file(sums: &[f64], filename: &str) {
 
 #[cfg(test)]
 mod tests {
-    use ndarray::arr2;
     use super::*;
+    use approx::assert_abs_diff_eq;
+    use ndarray::arr2;
 
     #[test]
     fn test_readfile() {
@@ -223,12 +221,17 @@ mod tests {
 
     #[test]
     fn test_standardise_array() {
-        let values = arr2(&[[1.0, 2.0, 3.0, 4.0, 5.0], [6.0, 7.0, 8.0, 9.0, 10.0]]);
+        let mut values = arr2(&[[1.0, 2.0, 3.0, 4.0, 5.0], [6.0, 7.0, 8.0, 9.0, 10.0]]);
         let i = 0;
-        let standardised_values = standardise_array(&values, i);
-        let expected_values = arr2(&[[-1.414213562373095, -0.7071067811865475, 0.0, 0.7071067811865475, 1.414213562373095], [6.0, 7.0, 8.0, 9.0, 10.0]]);
-                
-        assert_eq!(standardised_values, expected_values);
+        standardise_array(&mut values, i);
+        let expected_values = arr2(&[
+            [-1.2649, -0.6325, 0.0, 0.6325, 1.2649],
+            [6.0, 7.0, 8.0, 9.0, 10.0],
+        ]);
+
+        for (a, b) in values.iter().zip(expected_values.iter()) {
+            assert_abs_diff_eq!(a, b, epsilon = 1e-4);
+        }
     }
 
     #[test]
