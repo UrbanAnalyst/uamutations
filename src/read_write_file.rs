@@ -1,4 +1,4 @@
-use ndarray::Array2;
+use ndarray::{Array2, Axis};
 use serde_json::Value;
 use std::fs::File;
 use std::io::BufReader;
@@ -92,6 +92,37 @@ pub fn readfile(
     );
 
     (values, city_group)
+}
+
+/// Standarise one column of an array to z-scores.
+///
+/// This is used for social variables, which need to be standardised in order to have comparable
+/// beta coefficients for the MLR routines.
+///
+/// # Arguments
+/// * `values` - The array to be standarised.
+/// * `i` - The index of the column to be standarised.
+///
+/// # Returns
+/// The standarised array.
+pub fn standardise_array(values: &Array2<f64>, i: usize) -> Array2<f64> {
+    let sum_values: f64 = values.index_axis(Axis(0), i).sum();
+
+    let sum_values_sq: f64 = values.index_axis(Axis(0), i).mapv(|x| x.powi(2)).sum();
+
+    // Calculate standard deviations:
+    let nobs = values.ncols() as f64;
+    let mean_val: f64 = sum_values / nobs;
+    let std_dev: f64 = ((sum_values_sq / nobs) - (sum_values / nobs).powi(2)).sqrt();
+
+    let mut values = values.clone();
+
+    // Transform values:
+    values
+        .index_axis_mut(Axis(0), i)
+        .mapv_inplace(|x| (x - mean_val) / std_dev);
+
+    values
 }
 
 /// Writes the mean mutation values to a file.
