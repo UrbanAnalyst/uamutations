@@ -166,7 +166,7 @@ mod tests {
     fn test_readfile() {
         let filename1 = "./test_resources/dat1.json";
         let filename2 = "./test_resources/dat2.json";
-        let varnames = vec!["transport".to_string()];
+        let varnames = vec!["transport".to_string(), "social_index".to_string()];
 
         // -------- test panic conditions --------
         // Test when nentries <= 0
