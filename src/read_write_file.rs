@@ -4,6 +4,9 @@ use std::fs::File;
 use std::io::BufReader;
 use std::io::Write;
 
+// Define columns to standardise on reading:
+const COLS_TO_STD: [&str; 1] = ["social_index"];
+
 /// Reads a JSON file and returns a tuple of two vectors: one for the indices and one for the
 /// values.
 ///
@@ -54,12 +57,16 @@ pub fn readfile(
     let mut var_exists = vec![false; varnames.len()];
     let mut current_positions = vec![0; varnames.len()];
 
+    let mut std_index: Vec<usize> = vec![];
     if let Value::Array(array) = &json {
         for item in array {
             if let Value::Object(map) = item {
                 for (i, var) in varnames.iter().enumerate() {
                     if let Some(Value::Number(number)) = map.get(var.as_str()) {
                         var_exists[i] = true;
+                        if current_positions[i] == 0 && COLS_TO_STD.contains(&var.as_str()) {
+                            std_index.push(i);
+                        }
                         if let Some(number) = number.as_f64() {
                             if current_positions[i] < nentries {
                                 values[[i, current_positions[i]]] = number;
@@ -76,6 +83,12 @@ pub fn readfile(
                     }
                 }
             }
+        }
+    }
+
+    if !std_index.is_empty() {
+        for i in &std_index {
+            values = standardise_array(&values, *i);
         }
     }
 
