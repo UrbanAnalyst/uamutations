@@ -17,14 +17,12 @@ pub mod read_write_file;
 /// * `varname` - Name of variable in both `fname1` and `fname2` to be mutated.
 /// * `varextra` - Extra variables to be considered in the mutation.
 /// * `nentries` - The number of entries to be read from the JSON files.
-/// * `outfilename` - Path to local output file.
 ///
 /// # Process
 ///
 /// 1. Reads the variable specified by `varname` from the files `fname1` and `fname2`.
 /// 2. Calculates the absolute and relative differences between the two sets of data.
 /// 3. Orders the relative differences in descending order.
-/// 4. Writes the original data, the differences, and the ordering index to `outfilename`.
 ///
 /// The following seven vectors of equal length are written to the output file:
 /// 1. values: The original values of 'varname' from 'fname1'.
@@ -39,8 +37,7 @@ pub fn uamutate(
     varname: &str,
     varextra: Vec<String>,
     nentries: usize,
-    outfilename: &str,
-) {
+) -> Vec<f64> {
     let varsall: Vec<String> = vec![varname.to_string()];
     let num_varextra = varextra.len();
     let varsall = [varsall, varextra].concat();
@@ -58,9 +55,7 @@ pub fn uamutate(
     // then the distances by which `values1` need to be moved in the first dimension only to match
     // the closest equivalent values of `values21`.
     let dists = calculate_dists::calculate_dists(&values1, &values2, false);
-    let sums = aggregate_to_groups(&dists, &groups1);
-
-    read_write_file::write_file(&sums, outfilename);
+    aggregate_to_groups(&dists, &groups1)
 }
 
 /// Aggregate distances within the groups defined in the original `groups` vector.
@@ -99,10 +94,6 @@ fn aggregate_to_groups(dists: &[f64], groups: &[usize]) -> Vec<f64> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs;
-    use std::io::prelude::*;
-    use std::io::BufReader;
-    use std::path::Path;
 
     #[test]
     fn test_uamutate() {
@@ -112,33 +103,10 @@ mod tests {
         let varname = "bike_index";
         let varextra: Vec<String> = Vec::new();
         let nentries = 10;
-        let outfilename = "/tmp/test_output.txt";
 
         // Call the function with the test parameters
-        uamutate(
-            filename1,
-            filename2,
-            varname,
-            varextra,
-            nentries,
-            outfilename,
-        );
+        let sums = uamutate(filename1, filename2, varname, varextra, nentries);
 
-        // Check that the output file exists
-        assert!(Path::new(outfilename).exists());
-
-        // Open the file in read-only mode, returns `io::Result<File>`
-        let file = fs::File::open(outfilename).expect("unable to open file");
-        let reader = BufReader::new(file);
-
-        // Read all lines into a vector
-        let lines: Vec<_> = reader
-            .lines()
-            .collect::<Result<_, _>>()
-            .expect("unable to read lines");
-
-        // Check that the header contains the expected columns
-        let header = &lines[0];
-        assert!(header.contains("mutation"));
+        assert!(!sums.is_empty());
     }
 }
