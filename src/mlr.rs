@@ -47,13 +47,16 @@ pub fn mlr_beta(data: &Array2<f64>) -> Vec<f64> {
     let target_var = data_clone.column(0).to_owned();
     // Remove that column from data_clone:
     data_clone = data_clone.slice_mut(s![.., 1..]).to_owned();
+    assert!(
+        data_clone.nrows() > 0 && data_clone.ncols() > 0,
+        "Data must have at least one row and one column"
+    );
 
     // Convert ndarray to nalgebra::DMatrix
-    let data_matrix = DMatrix::from_row_slice(
-        data_clone.nrows(),
-        data_clone.ncols(),
-        data_clone.as_slice_memory_order().unwrap(),
-    );
+    let data_slice = data_clone
+        .as_slice_memory_order()
+        .expect("Data is not contiguous in memory");
+    let data_matrix = DMatrix::from_row_slice(data_clone.nrows(), data_clone.ncols(), data_slice);
     let target_vector = DVector::from_column_slice(&target_var.to_vec());
 
     // Perform SVD and solve for least squares
