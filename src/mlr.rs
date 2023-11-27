@@ -1,5 +1,5 @@
+use nalgebra::{DMatrix, DVector, SVD};
 use ndarray::{s, Array2};
-use ndarray_linalg::LeastSquaresSvd;
 
 /// Calculates beta coefficients (slopes) of a multiple linear regression of dimensions [1.., _] of
 /// input array against first dimension [0, _].
@@ -46,15 +46,21 @@ pub fn mlr_beta(data: &Array2<f64>) -> Vec<f64> {
     // Take first column as target_var:
     let target_var = data_clone.column(0).to_owned();
     // Remove that column from data_clone:
-    // data_clone.slice_mut(s![.., 1..]);
-    data_clone = data_clone.slice(s![.., 1..]).to_owned();
-    // let _dsq = data.t().dot(data);
+    data_clone = data_clone.slice_mut(s![.., 1..]).to_owned();
 
-    // The least squares regression call:
-    let result = data_clone.least_squares(&target_var).unwrap();
-    let b: Vec<f64> = result.solution.to_vec();
+    // Convert ndarray to nalgebra::DMatrix
+    let data_matrix = DMatrix::from_row_slice(
+        data_clone.nrows(),
+        data_clone.ncols(),
+        data_clone.as_slice_memory_order().unwrap(),
+    );
+    let target_vector = DVector::from_column_slice(&target_var.to_vec());
 
-    b
+    // Perform SVD and solve for least squares
+    let svd = SVD::new(data_matrix, true, true);
+    let b = svd.solve(&target_vector, 0.0).unwrap();
+
+    b.iter().cloned().collect()
 }
 
 /// Adjusts the first row of `values1` based on the multi-linear regression coefficients of the
