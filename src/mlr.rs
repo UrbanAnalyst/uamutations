@@ -1,5 +1,4 @@
 use nalgebra::{DMatrix, DVector, SVD};
-use ndarray::{s, Array2};
 
 /// Calculates beta coefficients (slopes) of a multiple linear regression of dimensions [1.., _] of
 /// input array against first dimension [0, _].
@@ -38,30 +37,23 @@ use ndarray::{s, Array2};
 /// let result_3 = mlr_beta(&data_3);
 /// println!("Result with 3 variables: {:?}", result_3);
 /// ```
-pub fn mlr_beta(data: &Array2<f64>) -> Vec<f64> {
+pub fn mlr_beta(data: &DMatrix<f64>) -> Vec<f64> {
     assert!(!data.is_empty(), "values1 must not be empty");
 
     // Transpose data(vars, obs) to (obs, vars):
-    let mut data_clone = data.t().to_owned();
+    let mut data_clone = data.transpose();
     // Take first column as target_var:
-    let target_var = data_clone.column(0).to_owned();
+    let target_var = data_clone.column(0).clone_owned();
     // Remove that column from data_clone:
-    data_clone = data_clone.slice_mut(s![.., 1..]).to_owned();
+    data_clone.remove_column(0);
     assert!(
         data_clone.nrows() > 0 && data_clone.ncols() > 0,
         "Data must have at least one row and one column"
     );
 
-    // Convert ndarray to nalgebra::DMatrix
-    let data_slice = data_clone
-        .as_slice_memory_order()
-        .expect("Data is not contiguous in memory");
-    let data_matrix = DMatrix::from_row_slice(data_clone.nrows(), data_clone.ncols(), data_slice);
-    let target_vector = DVector::from_column_slice(&target_var.to_vec());
-
     // Perform SVD and solve for least squares
-    let svd = SVD::new(data_matrix, true, true);
-    let b = svd.solve(&target_vector, 0.0).unwrap();
+    let svd = SVD::new(data_clone, true, true);
+    let b = svd.solve(&target_var, 0.0).unwrap();
 
     b.iter().cloned().collect()
 }
@@ -91,21 +83,22 @@ pub fn mlr_beta(data: &Array2<f64>) -> Vec<f64> {
 ///     v1_orig.slice(s![1.., ..]),
 ///     "Only the first row of v1 should be different"
 /// );
-pub fn adj_for_beta(values1: &mut Array2<f64>, values2: &Array2<f64>) {
+pub fn adj_for_beta(values1: &mut DMatrix<f64>, values2: &DMatrix<f64>) {
     // Calculate MLR regression coefficients between first variables and all others:
     let beta1 = mlr_beta(values1);
     let beta2 = mlr_beta(values2);
     // Then adjust `values1` by removing its dependence on those variables, and replacing with the
     // dependnece of values2 on same variables:
-    let mut result = ndarray::Array1::zeros(values1.ncols());
+    let mut result = DVector::zeros(values1.ncols());
+    let unit_vec = DVector::from_element(values1.ncols(), 1.0);
     for i in 0..values1.ncols() {
-        let b1 = ndarray::Array1::from(beta1.clone());
-        let b2 = ndarray::Array1::from(beta2.clone());
-        let values_slice = values1.slice(s![1.., i]).to_owned();
-        let product = &values_slice * (1.0 + &b2 - &b1);
+        let b1 = DVector::from(beta1.clone());
+        let b2 = DVector::from(beta2.clone());
+        let values_slice = values1.row(i).clone_owned();
+        let product = &values_slice * (unit_vec + &b2 - &b1);
         result[i] = product.sum();
     }
-    values1.row_mut(0).assign(&result);
+    values1.row_mut(0).copy_from(&result);
 }
 
 #[cfg(test)]
