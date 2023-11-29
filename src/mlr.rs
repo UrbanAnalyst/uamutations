@@ -39,17 +39,16 @@ use nalgebra::{DMatrix, DVector, SVD};
 /// ```
 pub fn mlr_beta(data: &DMatrix<f64>) -> Vec<f64> {
     assert!(!data.is_empty(), "values1 must not be empty");
-
-    // Transpose data(vars, obs) to (obs, vars):
-    let data_clone = data.transpose();
-    // Take first column as target_var:
-    let target_var = data_clone.column(0).clone_owned();
-    // Remove that column from data_clone:
-    data_clone.clone().remove_column(0);
     assert!(
-        data_clone.nrows() > 0 && data_clone.ncols() > 0,
+        data.nrows() > 0 && data.ncols() > 0,
         "Data must have at least one row and one column"
     );
+
+    let mut data_clone = data.clone();
+    // Take first col as target_var:
+    let target_var = data_clone.column(0).clone_owned();
+    // Replacing with 1.0 for SVD:
+    data_clone.set_column(0, &DVector::from_element(data_clone.nrows(), 1.0));
 
     // Perform SVD and solve for least squares
     let svd = SVD::new(data_clone, true, true);
@@ -85,58 +84,84 @@ pub fn mlr_beta(data: &DMatrix<f64>) -> Vec<f64> {
 /// );
 pub fn adj_for_beta(values1: &mut DMatrix<f64>, values2: &DMatrix<f64>) {
     // Calculate MLR regression coefficients between first variables and all others:
-    let beta1 = mlr_beta(values1);
-    let beta2 = mlr_beta(values2);
-    // Then adjust `values1` by removing its dependence on those variables, and replacing with the
-    // dependnece of values2 on same variables:
-    let mut result = DVector::zeros(values1.ncols());
-    let unit_vec = DVector::from_element(values1.ncols(), 1.0);
-    for i in 0..values1.ncols() {
-        let b1 = DVector::from(beta1.clone());
-        let b2 = DVector::from(beta2.clone());
-        let values_slice = values1.row(i).clone_owned();
-        let product = &values_slice * (unit_vec.clone() + &b2 - &b1);
-        result[i] = product.sum();
-    }
-    values1.row_mut(0).copy_from(&result);
+    let mut beta1 = mlr_beta(values1);
+    beta1[0] = 0.0;
+    let mut beta2 = mlr_beta(values2);
+    beta2[0] = 0.0;
+
+    let b1 = DMatrix::from_fn(values1.nrows(), values1.ncols(), |_, r| beta1[r]);
+    let b2 = DMatrix::from_fn(values1.nrows(), values1.ncols(), |_, r| beta2[r]);
+
+    let product1 = values1.component_mul(&b1);
+    let product2 = values2.component_mul(&b2);
+
+    let sum1: DVector<f64> = product1.column_sum();
+    let sum2: DVector<f64> = product2.column_sum();
+    let first_column = values1.column(0).clone_owned() + sum2 - sum1.clone();
+
+    values1.set_column(0, &sum1);
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ndarray::array;
 
     #[test]
     fn test_mlr_beta_2_variables() {
-        let data_2 = array![[1.0, 2.0, 3.0, 4.0, 5.0], [2.1, 3.2, 4.1, 5.2, 5.9],];
+        let data_2 = vec![
+            1.0, 2.0, 3.0, 4.0, 5.0,
+            2.1, 3.2, 4.1, 5.2, 5.9
+        ];
+        let data_2 = DMatrix::from_vec(5, 2, data_2);
+        assert!(data_2[(0, 0)] == 1.0 && data_2[(1, 0)] == 2.0 && data_2[(2, 0)] == 3.0);
+        assert!(data_2[(0, 1)] == 2.1 && data_2[(1, 1)] == 3.2 && data_2[(2, 1)] == 4.1);
+        assert_eq!(data_2.nrows(), 5);
+        assert_eq!(data_2.ncols(), 2);
+        let data_2 = data_2.transpose();
         let result_2 = mlr_beta(&data_2);
         assert_eq!(result_2.len(), 1);
     }
 
     #[test]
     fn test_mlr_beta_3_variables() {
-        let data_3 = array![
-            [1.0, 2.0, 3.0, 4.0, 5.0],
-            [2.1, 3.2, 4.1, 5.2, 5.9],
-            [3.0, 4.1, 4.9, 6.0, 7.1],
+        let data_3 = vec![
+            1.0, 2.0, 3.0, 4.0, 5.0,
+            2.1, 3.2, 4.1, 5.2, 5.9,
+            3.0, 4.1, 4.9, 6.0, 7.1
         ];
+        let data_3 = DMatrix::from_vec(5, 3, data_3);
+        assert!(data_3[(0, 0)] == 1.0 && data_3[(1, 0)] == 2.0 && data_3[(2, 0)] == 3.0);
+        assert!(data_3[(0, 1)] == 2.1 && data_3[(1, 1)] == 3.2 && data_3[(2, 1)] == 4.1);
+        assert_eq!(data_3.nrows(), 5);
+        assert_eq!(data_3.ncols(), 3);
+        let data_3 = data_3.transpose();
         let result_3 = mlr_beta(&data_3);
         assert_eq!(result_3.len(), 2);
     }
 
     #[test]
     fn test_adj_for_beta() {
-        let mut v1 = array![[1.0, 2.0, 3.0, 4.0, 5.0], [2.1, 3.2, 4.1, 5.2, 5.9]];
+        let v1 = vec![
+            1.0, 2.0, 3.0, 4.0, 5.0,
+            2.1, 3.2, 4.1, 5.2, 5.9
+        ];
+        let v1 = DMatrix::from_vec(5, 2, v1);
+        let mut v1 = v1.transpose();
         let v1_orig = v1.clone();
-        let v2 = array![[1.0, 2.0, 3.0, 4.0, 5.0], [3.1, 4.3, 5.3, 6.5, 7.3]];
+        let v2 = vec![
+            1.0, 2.0, 3.0, 4.0, 5.0,
+            3.1, 4.3, 5.3, 6.5, 7.3
+        ];
+        let v2 = DMatrix::from_vec(5, 2, v2);
+        let v2 = v2.transpose();
         adj_for_beta(&mut v1, &v2);
         assert_ne!(
             v1, v1_orig,
             "v1 should be different from v1_orig after adj_for_beta"
         );
         assert_eq!(
-            v1.slice(s![1.., ..]),
-            v1_orig.slice(s![1.., ..]),
+            v1.row(0),
+            v1_orig.row(0),
             "Only the first row of v1 should be different"
         );
     }
