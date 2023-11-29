@@ -41,11 +41,11 @@ pub fn mlr_beta(data: &DMatrix<f64>) -> Vec<f64> {
     assert!(!data.is_empty(), "values1 must not be empty");
 
     // Transpose data(vars, obs) to (obs, vars):
-    let mut data_clone = data.transpose();
+    let data_clone = data.transpose();
     // Take first column as target_var:
     let target_var = data_clone.column(0).clone_owned();
     // Remove that column from data_clone:
-    data_clone.remove_column(0);
+    data_clone.clone().remove_column(0);
     assert!(
         data_clone.nrows() > 0 && data_clone.ncols() > 0,
         "Data must have at least one row and one column"
@@ -95,7 +95,7 @@ pub fn adj_for_beta(values1: &mut DMatrix<f64>, values2: &DMatrix<f64>) {
         let b1 = DVector::from(beta1.clone());
         let b2 = DVector::from(beta2.clone());
         let values_slice = values1.row(i).clone_owned();
-        let product = &values_slice * (unit_vec + &b2 - &b1);
+        let product = &values_slice * (unit_vec.clone() + &b2 - &b1);
         result[i] = product.sum();
     }
     values1.row_mut(0).copy_from(&result);
