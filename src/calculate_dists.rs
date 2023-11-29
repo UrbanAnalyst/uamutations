@@ -171,16 +171,24 @@ mod tests {
     fn test_calculate_dists_absolute() {
         // Note that 2.0 is closest to 2.0, but is matched to 3.0 because of sequential and unique
         // matching.
-        let values1 = ndarray::array![[1.0, 2.0, 4.0, 5.0]];
-        let values2 = ndarray::array![[7.0, 9.0, 3.0, 2.0]];
+        let values1 = vec![1.0, 2.0, 4.0, 5.0];
+        let values2 = vec![7.0, 9.0, 3.0, 2.0];
+        let values1 = DMatrix::from_vec(4, 1, values1);
+        let values2 = DMatrix::from_vec(4, 1, values2);
+        let values1 = values1.transpose();
+        let values2 = values2.transpose();
         let result = calculate_dists(&values1, &values2, true);
         assert_eq!(result, vec![1.0, 1.0, 3.0, 4.0]);
     }
 
     #[test]
     fn test_calculate_dists_relative() {
-        let values1 = ndarray::array![[1.0, 2.0, 4.0, 5.0]];
-        let values2 = ndarray::array![[7.0, 9.0, 3.0, 2.0]];
+        let values1 = vec![1.0, 2.0, 4.0, 5.0];
+        let values2 = vec![7.0, 9.0, 3.0, 2.0];
+        let values1 = DMatrix::from_vec(4, 1, values1);
+        let values2 = DMatrix::from_vec(4, 1, values2);
+        let values1 = values1.transpose();
+        let values2 = values2.transpose();
         let result = calculate_dists(&values1, &values2, false);
         assert_eq!(result, vec![1.0, 0.5, 0.75, 0.8]);
     }

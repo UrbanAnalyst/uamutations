@@ -160,7 +160,6 @@ pub fn write_file(sums: &[f64], filename: &str) {
 mod tests {
     use super::*;
     use approx::assert_abs_diff_eq;
-    use ndarray::arr2;
 
     #[test]
     fn test_readfile() {
@@ -221,13 +220,18 @@ mod tests {
 
     #[test]
     fn test_standardise_array() {
-        let mut values = arr2(&[[1.0, 2.0, 3.0, 4.0, 5.0], [6.0, 7.0, 8.0, 9.0, 10.0]]);
+        let values = vec![
+            1.0, 2.0, 3.0, 4.0, 5.0,
+            6.0, 7.0, 8.0, 9.0, 10.0
+        ];
+        let mut values = DMatrix::from_vec(2, 5, values);
         let i = 0;
         standardise_array(&mut values, i);
-        let expected_values = arr2(&[
-            [-1.2649, -0.6325, 0.0, 0.6325, 1.2649],
-            [6.0, 7.0, 8.0, 9.0, 10.0],
-        ]);
+        let expected_values = vec![
+            -1.2649, -0.6325, 0.0, 0.6325, 1.2649,
+            6.0, 7.0, 8.0, 9.0, 10.0
+        ];
+        let expected_values = DMatrix::from_vec(2, 5, expected_values);
 
         for (a, b) in values.iter().zip(expected_values.iter()) {
             assert_abs_diff_eq!(a, b, epsilon = 1e-4);
