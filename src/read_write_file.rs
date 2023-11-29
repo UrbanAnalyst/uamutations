@@ -1,4 +1,4 @@
-use ndarray::{Array2, Axis};
+use nalgebra::DMatrix;
 use serde_json::Value;
 use std::fs::File;
 use std::io::BufReader;
@@ -41,7 +41,7 @@ pub fn readfile(
     filename: &str,
     varnames: &Vec<String>,
     nentries: usize,
-) -> (Array2<f64>, Vec<usize>) {
+) -> (DMatrix<f64>, Vec<usize>) {
     assert!(nentries > 0, "nentries must be greater than zero");
 
     let file = File::open(filename).unwrap();
@@ -49,8 +49,7 @@ pub fn readfile(
 
     let json: Value = serde_json::from_reader(reader).unwrap();
 
-    let mut values = Array2::<f64>::zeros((varnames.len(), nentries));
-    //let mut values = vec![Vec::new(); varnames.len()];
+    let mut values = DMatrix::<f64>::zeros(varnames.len(), nentries);
     let mut city_group = Vec::new();
     let city_group_col = "index";
 
@@ -69,7 +68,8 @@ pub fn readfile(
                         }
                         if let Some(number) = number.as_f64() {
                             if current_positions[i] < nentries {
-                                values[[i, current_positions[i]]] = number;
+                                // values[[i, current_positions[i]]] = number;
+                                values[(i, current_positions[i])] = number;
                                 current_positions[i] += 1;
                             }
                         }
@@ -100,7 +100,7 @@ pub fn readfile(
         );
     }
     assert!(
-        city_group.len() == values.dim().1,
+        city_group.len() == values.nrows(),
         "The length of city_group does not match the number of rows in values"
     );
 
@@ -118,10 +118,10 @@ pub fn readfile(
 ///
 /// # Returns
 /// The standarised array.
-pub fn standardise_array(values: &mut Array2<f64>, i: usize) {
-    let sum_values: f64 = values.index_axis(Axis(0), i).sum();
+pub fn standardise_array(values: &mut DMatrix<f64>, i: usize) {
+    let sum_values: f64 = values.row(i).sum();
 
-    let sum_values_sq: f64 = values.index_axis(Axis(0), i).mapv(|x| x.powi(2)).sum();
+    let sum_values_sq: f64 = values.row(i).iter().map(|&x| x.powi(2)).sum();
 
     // Calculate standard deviations:
     let nobs = values.ncols() as f64;
@@ -130,9 +130,9 @@ pub fn standardise_array(values: &mut Array2<f64>, i: usize) {
         ((sum_values_sq / nobs - (sum_values / nobs).powi(2)) * nobs / (nobs - 1.0)).sqrt();
 
     // Transform values:
-    values
-        .index_axis_mut(Axis(0), i)
-        .mapv_inplace(|x| (x - mean_val) / std_dev);
+    for val in &mut values.row_mut(i) {
+        *val = (*val - mean_val) / std_dev;
+    }
 }
 
 /// Writes the mean mutation values to a file.
