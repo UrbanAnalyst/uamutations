@@ -99,7 +99,7 @@ pub fn adj_for_beta(values1: &mut DMatrix<f64>, values2: &DMatrix<f64>) {
     let sum2: DVector<f64> = product2.column_sum();
     let first_column = values1.column(0).clone_owned() + sum2 - sum1.clone();
 
-    values1.set_column(0, &sum1);
+    values1.set_column(0, &first_column);
 }
 
 #[cfg(test)]

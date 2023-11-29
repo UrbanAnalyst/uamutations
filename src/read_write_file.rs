@@ -100,7 +100,7 @@ pub fn readfile(
         );
     }
     assert!(
-        city_group.len() == values.nrows(),
+        city_group.len() == values.ncols(),
         "The length of city_group does not match the number of rows in values"
     );
 
