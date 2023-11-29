@@ -2,7 +2,7 @@
 //! Analyst](https://urbananalyst.city). The algorithm mutates selected properties for one city to
 //! become more like those of another selected city.
 
-use ndarray::Array2;
+use nalgebra::DMatrix;
 
 pub mod calculate_dists;
 pub mod mlr;
@@ -33,7 +33,11 @@ pub mod read_write_file;
 /// # Panics
 ///
 /// This function will panic if the input files cannot be read, or if the output file cannot be written.
-pub fn uamutate(values1: &mut Array2<f64>, groups1: Vec<usize>, values2: &Array2<f64>) -> Vec<f64> {
+pub fn uamutate(
+    values1: &mut DMatrix<f64>,
+    groups1: Vec<usize>,
+    values2: &DMatrix<f64>,
+) -> Vec<f64> {
     // Adjust `values1` by removing its dependence on varextra, and replacing with the dependnece
     // of values2 on same variables (but only if `varextra` are specified):
     if values1.nrows() > 1 {
