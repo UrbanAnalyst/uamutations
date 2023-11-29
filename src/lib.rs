@@ -2,6 +2,8 @@
 //! Analyst](https://urbananalyst.city). The algorithm mutates selected properties for one city to
 //! become more like those of another selected city.
 
+use ndarray::Array2;
+
 pub mod calculate_dists;
 pub mod mlr;
 pub mod read_write_file;
@@ -31,30 +33,18 @@ pub mod read_write_file;
 /// # Panics
 ///
 /// This function will panic if the input files cannot be read, or if the output file cannot be written.
-pub fn uamutate(
-    fname1: &str,
-    fname2: &str,
-    varname: &str,
-    varextra: Vec<String>,
-    nentries: usize,
-) -> Vec<f64> {
-    let varsall: Vec<String> = vec![varname.to_string()];
-    let num_varextra = varextra.len();
-    let varsall = [varsall, varextra].concat();
-    let (mut values1, groups1) = read_write_file::readfile(fname1, &varsall, nentries);
-    let (values2, _groups2) = read_write_file::readfile(fname2, &varsall, nentries);
-
-    // Then adjust `values1` by removing its dependence on varextra, and replacing with the
-    // dependnece of values2 on same variables (but only if `varextra` are specified):
-    if num_varextra > 0 {
-        mlr::adj_for_beta(&mut values1, &values2);
+pub fn uamutate(values1: &mut Array2<f64>, groups1: Vec<usize>, values2: &Array2<f64>) -> Vec<f64> {
+    // Adjust `values1` by removing its dependence on varextra, and replacing with the dependnece
+    // of values2 on same variables (but only if `varextra` are specified):
+    if values1.nrows() > 1 {
+        mlr::adj_for_beta(values1, values2);
     }
 
     // Then calculate successive differences between the two sets of values, where `false` is for
     // the `absolute` parameter, so that differences are calculated relative to values1. These are
     // then the distances by which `values1` need to be moved in the first dimension only to match
     // the closest equivalent values of `values21`.
-    let dists = calculate_dists::calculate_dists(&values1, &values2, false);
+    let dists = calculate_dists::calculate_dists(values1, values2, false);
     aggregate_to_groups(&dists, &groups1)
 }
 
@@ -101,11 +91,16 @@ mod tests {
         let filename1 = "./test_resources/dat1.json";
         let filename2 = "./test_resources/dat2.json";
         let varname = "bike_index";
-        let varextra: Vec<String> = Vec::new();
+        // let varextra: Vec<String> = Vec::new();
+        let varextra = vec!["natural".to_string(), "social_index".to_string()];
         let nentries = 10;
 
-        // Call the function with the test parameters
-        let sums = uamutate(filename1, filename2, varname, varextra, nentries);
+        let varsall: Vec<String> = vec![varname.to_string()];
+        let varsall = [varsall, varextra].concat();
+        let (mut values1, groups1) = read_write_file::readfile(filename1, &varsall, nentries);
+        let (values2, _groups2) = read_write_file::readfile(filename2, &varsall, nentries);
+
+        let sums = uamutate(&mut values1, groups1, &values2);
 
         assert!(!sums.is_empty());
     }
