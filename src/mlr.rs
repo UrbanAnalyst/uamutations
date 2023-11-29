@@ -117,9 +117,8 @@ mod tests {
         assert!(data_2[(0, 1)] == 2.1 && data_2[(1, 1)] == 3.2 && data_2[(2, 1)] == 4.1);
         assert_eq!(data_2.nrows(), 5);
         assert_eq!(data_2.ncols(), 2);
-        let data_2 = data_2.transpose();
         let result_2 = mlr_beta(&data_2);
-        assert_eq!(result_2.len(), 1);
+        assert_eq!(result_2.len(), 2);
     }
 
     #[test]
@@ -134,9 +133,8 @@ mod tests {
         assert!(data_3[(0, 1)] == 2.1 && data_3[(1, 1)] == 3.2 && data_3[(2, 1)] == 4.1);
         assert_eq!(data_3.nrows(), 5);
         assert_eq!(data_3.ncols(), 3);
-        let data_3 = data_3.transpose();
         let result_3 = mlr_beta(&data_3);
-        assert_eq!(result_3.len(), 2);
+        assert_eq!(result_3.len(), 3);
     }
 
     #[test]

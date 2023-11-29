@@ -233,8 +233,12 @@ mod tests {
         ];
         let expected_values = DMatrix::from_vec(2, 5, expected_values);
 
-        for (a, b) in values.iter().zip(expected_values.iter()) {
-            assert_abs_diff_eq!(a, b, epsilon = 1e-4);
+        for i in 0..values.nrows() {
+            for j in 0..values.ncols() {
+                let val = values[(i, j)];
+                let expected_val = expected_values[(i, j)];
+                assert_abs_diff_eq!(val, expected_val, epsilon = 1e-4);
+            }
         }
     }
 
