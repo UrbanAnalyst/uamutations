@@ -2,6 +2,9 @@
 //! Analyst](https://urbananalyst.city). The algorithm mutates selected properties for one city to
 //! become more like those of another selected city.
 
+use std::fs::File;
+use std::io::BufReader;
+
 extern crate uamutations;
 pub mod mlr;
 pub mod read_write_file;
@@ -24,9 +27,13 @@ fn main() {
 
     let varsall: Vec<String> = vec![VARNAME.to_string()];
     let varsall = [varsall, varextra].concat();
-    let (mut values1, groups1) = read_write_file::readfile(FNAME1, &varsall, NENTRIES);
-    let (values2, _groups2) = read_write_file::readfile(FNAME2, &varsall, NENTRIES);
 
-    let sums = uamutations::uamutate(&mut values1, groups1, &values2);
+    let file1 = File::open(FNAME1).unwrap();
+    let reader1 = BufReader::new(file1);
+    let file2 = File::open(FNAME2).unwrap();
+    let reader2 = BufReader::new(file2);
+
+    let sums = uamutations::uamutate(reader1, reader2, &varsall, NENTRIES);
+
     read_write_file::write_file(&sums, OUTFILENAME);
 }

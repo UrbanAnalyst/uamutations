@@ -30,22 +30,23 @@ const COLS_TO_STD: [&str; 1] = ["social_index"];
 /// # Example
 ///
 /// ```
+/// use std::fs::File;
+/// use std::io::BufReader;
 /// use uamutations::read_write_file::readfile;
 /// let filename = "./test_resources/dat1.json";
+/// let file = File::open(filename).unwrap();
+/// let reader = BufReader::new(file);
 /// let varnames = vec!["transport".to_string()];
 /// let nentries = 10;
-/// let (values, groups) = readfile(filename, &varnames, nentries);
+/// let (values, groups) = readfile(reader, &varnames, nentries);
 /// ```
 
 pub fn readfile(
-    filename: &str,
+    reader: BufReader<File>,
     varnames: &Vec<String>,
     nentries: usize,
 ) -> (DMatrix<f64>, Vec<usize>) {
     assert!(nentries > 0, "nentries must be greater than zero");
-
-    let file = File::open(filename).unwrap();
-    let reader = BufReader::new(file);
 
     let json: Value = serde_json::from_reader(reader).unwrap();
 
@@ -170,14 +171,18 @@ mod tests {
         // -------- test panic conditions --------
         // Test when nentries <= 0
         let nentries = 0;
+        let file1a = File::open(filename1).unwrap();
+        let reader1a = BufReader::new(file1a);
         let result = std::panic::catch_unwind(|| {
-            readfile(filename1, &varnames, nentries);
+            readfile(reader1a, &varnames, nentries);
         });
         assert!(result.is_err(), "Expected an error when nentries <= 0");
 
         // Test error when variables do not exist in JSON file
+        let file1b = File::open(filename1).unwrap();
+        let reader1b = BufReader::new(file1b);
         let result = std::panic::catch_unwind(|| {
-            readfile(filename1, &vec!["nonexistent_var".to_string()], nentries);
+            readfile(reader1b, &vec!["nonexistent_var".to_string()], nentries);
         });
         assert!(
             result.is_err(),
@@ -185,16 +190,22 @@ mod tests {
         );
 
         // Test error when nentries == 0:
+        let file1c = File::open(filename1).unwrap();
+        let reader1c = BufReader::new(file1c);
         let result = std::panic::catch_unwind(|| {
-            readfile(filename1, &varnames, 0);
+            readfile(reader1c, &varnames, 0);
         });
         assert!(result.is_err(), "Expected an error when nentries <= 0");
 
         // -------- test normal conditions and return values --------
         let nentries = 10;
 
-        let (values1, groups1) = readfile(filename1, &varnames, nentries);
-        let (values2, groups2) = readfile(filename2, &varnames, nentries);
+        let file1d = File::open(filename1).unwrap();
+        let reader1d = BufReader::new(file1d);
+        let file2a = File::open(filename2).unwrap();
+        let reader2a = BufReader::new(file2a);
+        let (values1, groups1) = readfile(reader1d, &varnames, nentries);
+        let (values2, groups2) = readfile(reader2a, &varnames, nentries);
 
         assert_eq!(
             values1.nrows(),
