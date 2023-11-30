@@ -49,7 +49,7 @@ pub fn readfile(
 
     let json: Value = serde_json::from_reader(reader).unwrap();
 
-    let mut values = DMatrix::<f64>::zeros(varnames.len(), nentries);
+    let mut values = DMatrix::<f64>::zeros(nentries, varnames.len());
     let mut city_group = Vec::new();
     let city_group_col = "index";
 
@@ -69,7 +69,7 @@ pub fn readfile(
                         if let Some(number) = number.as_f64() {
                             if current_positions[i] < nentries {
                                 // values[[i, current_positions[i]]] = number;
-                                values[(i, current_positions[i])] = number;
+                                values[(current_positions[i], i)] = number;
                                 current_positions[i] += 1;
                             }
                         }
@@ -100,7 +100,7 @@ pub fn readfile(
         );
     }
     assert!(
-        city_group.len() == values.ncols(),
+        city_group.len() == values.nrows(),
         "The length of city_group does not match the number of rows in values"
     );
 
