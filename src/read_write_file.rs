@@ -220,16 +220,22 @@ mod tests {
 
     #[test]
     fn test_standardise_array() {
-        let values = vec![
-            1.0, 2.0, 3.0, 4.0, 5.0,
-            6.0, 7.0, 8.0, 9.0, 10.0
-        ];
+        // The rows and columns are:
+        // let values = vec![
+        //     1.0, 2.0, 3.0, 4.0, 5.0,
+        //     6.0, 7.0, 8.0, 9.0, 10.0
+        // ];
+        let values = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
         let mut values = DMatrix::from_vec(5, 2, values);
         let i = 0;
         standardise_array(&mut values, i);
+        // The rows and columns are:
+        // let expected_values = vec![
+        //     -1.2649, -0.6325, 0.0, 0.6325, 1.2649,
+        //     6.0, 7.0, 8.0, 9.0, 10.0
+        // ];
         let expected_values = vec![
-            -1.2649, -0.6325, 0.0, 0.6325, 1.2649,
-            6.0, 7.0, 8.0, 9.0, 10.0
+            -1.2649, -0.6325, 0.0, 0.6325, 1.2649, 6.0, 7.0, 8.0, 9.0, 10.0,
         ];
         let expected_values = DMatrix::from_vec(5, 2, expected_values);
 

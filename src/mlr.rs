@@ -110,10 +110,12 @@ mod tests {
 
     #[test]
     fn test_mlr_beta_2_variables() {
-        let data_2 = vec![
-            1.0, 2.0, 3.0, 4.0, 5.0,
-            2.1, 3.2, 4.1, 5.2, 5.9
-        ];
+        // The rows and columns are:
+        // data_2 = vec![
+        //      1.0, 2.0, 3.0, 4.0, 5.0,
+        //      2.1, 3.2, 4.1, 5.2, 5.9
+        //  ];
+        let data_2 = vec![1.0, 2.0, 3.0, 4.0, 5.0, 2.1, 3.2, 4.1, 5.2, 5.9];
         let data_2 = DMatrix::from_vec(5, 2, data_2);
         assert!(data_2[(0, 0)] == 1.0 && data_2[(1, 0)] == 2.0 && data_2[(2, 0)] == 3.0);
         assert!(data_2[(0, 1)] == 2.1 && data_2[(1, 1)] == 3.2 && data_2[(2, 1)] == 4.1);
@@ -125,10 +127,14 @@ mod tests {
 
     #[test]
     fn test_mlr_beta_3_variables() {
+        // The rows and columns are:
+        // let data_3 = vec![
+        //    1.0, 2.0, 3.0, 4.0, 5.0,
+        //    2.1, 3.2, 4.1, 5.2, 5.9,
+        //    3.0, 4.1, 4.9, 6.0, 7.1,
+        //];
         let data_3 = vec![
-            1.0, 2.0, 3.0, 4.0, 5.0,
-            2.1, 3.2, 4.1, 5.2, 5.9,
-            3.0, 4.1, 4.9, 6.0, 7.1
+            1.0, 2.0, 3.0, 4.0, 5.0, 2.1, 3.2, 4.1, 5.2, 5.9, 3.0, 4.1, 4.9, 6.0, 7.1,
         ];
         let data_3 = DMatrix::from_vec(5, 3, data_3);
         assert!(data_3[(0, 0)] == 1.0 && data_3[(1, 0)] == 2.0 && data_3[(2, 0)] == 3.0);
@@ -141,16 +147,10 @@ mod tests {
 
     #[test]
     fn test_adj_for_beta() {
-        let v1 = vec![
-            1.0, 2.0, 3.0, 4.0, 5.0,
-            2.1, 3.2, 4.1, 5.2, 5.9
-        ];
+        let v1 = vec![1.0, 2.0, 3.0, 4.0, 5.0, 2.1, 3.2, 4.1, 5.2, 5.9];
         let mut v1 = DMatrix::from_vec(5, 2, v1);
         let v1_orig = v1.clone();
-        let v2 = vec![
-            1.0, 2.0, 3.0, 4.0, 5.0,
-            3.1, 4.3, 5.3, 6.5, 7.3
-        ];
+        let v2 = vec![1.0, 2.0, 3.0, 4.0, 5.0, 3.1, 4.3, 5.3, 6.5, 7.3];
         let v2 = DMatrix::from_vec(5, 2, v2);
         adj_for_beta(&mut v1, &v2);
         assert_ne!(
