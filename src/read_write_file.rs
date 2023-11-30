@@ -119,18 +119,18 @@ pub fn readfile(
 /// # Returns
 /// The standarised array.
 pub fn standardise_array(values: &mut DMatrix<f64>, i: usize) {
-    let sum_values: f64 = values.row(i).sum();
+    let sum_values: f64 = values.column(i).sum();
 
-    let sum_values_sq: f64 = values.row(i).iter().map(|&x| x.powi(2)).sum();
+    let sum_values_sq: f64 = values.column(i).iter().map(|&x| x.powi(2)).sum();
 
     // Calculate standard deviations:
-    let nobs = values.ncols() as f64;
+    let nobs = values.nrows() as f64;
     let mean_val: f64 = sum_values / nobs;
     let std_dev: f64 =
         ((sum_values_sq / nobs - (sum_values / nobs).powi(2)) * nobs / (nobs - 1.0)).sqrt();
 
     // Transform values:
-    for val in &mut values.row_mut(i) {
+    for val in &mut values.column_mut(i) {
         *val = (*val - mean_val) / std_dev;
     }
 }
@@ -224,14 +224,14 @@ mod tests {
             1.0, 2.0, 3.0, 4.0, 5.0,
             6.0, 7.0, 8.0, 9.0, 10.0
         ];
-        let mut values = DMatrix::from_vec(2, 5, values);
+        let mut values = DMatrix::from_vec(5, 2, values);
         let i = 0;
         standardise_array(&mut values, i);
         let expected_values = vec![
             -1.2649, -0.6325, 0.0, 0.6325, 1.2649,
             6.0, 7.0, 8.0, 9.0, 10.0
         ];
-        let expected_values = DMatrix::from_vec(2, 5, expected_values);
+        let expected_values = DMatrix::from_vec(5, 2, expected_values);
 
         for i in 0..values.nrows() {
             for j in 0..values.ncols() {
