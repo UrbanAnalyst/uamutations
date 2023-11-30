@@ -2,7 +2,8 @@
 //! Analyst](https://urbananalyst.city). The algorithm mutates selected properties for one city to
 //! become more like those of another selected city.
 
-use nalgebra::DMatrix;
+use std::fs::File;
+use std::io::BufReader;
 
 pub mod calculate_dists;
 pub mod mlr;
@@ -34,21 +35,25 @@ pub mod read_write_file;
 ///
 /// This function will panic if the input files cannot be read, or if the output file cannot be written.
 pub fn uamutate(
-    values1: &mut DMatrix<f64>,
-    groups1: Vec<usize>,
-    values2: &DMatrix<f64>,
+    reader1: BufReader<File>,
+    reader2: BufReader<File>,
+    varnames: &Vec<String>,
+    nentries: usize,
 ) -> Vec<f64> {
+    // Read contents of files:
+    let (mut values1, groups1) = read_write_file::readfile(reader1, varnames, nentries);
+    let (values2, _groups2) = read_write_file::readfile(reader2, varnames, nentries);
     // Adjust `values1` by removing its dependence on varextra, and replacing with the dependnece
     // of values2 on same variables (but only if `varextra` are specified):
     if values1.nrows() > 1 {
-        mlr::adj_for_beta(values1, values2);
+        mlr::adj_for_beta(&mut values1, &values2);
     }
 
     // Then calculate successive differences between the two sets of values, where `false` is for
     // the `absolute` parameter, so that differences are calculated relative to values1. These are
     // then the distances by which `values1` need to be moved in the first dimension only to match
     // the closest equivalent values of `values21`.
-    let dists = calculate_dists::calculate_dists(values1, values2, false);
+    let dists = calculate_dists::calculate_dists(&values1, &values2, false);
     aggregate_to_groups(&dists, &groups1)
 }
 
@@ -101,10 +106,15 @@ mod tests {
 
         let varsall: Vec<String> = vec![varname.to_string()];
         let varsall = [varsall, varextra].concat();
-        let (mut values1, groups1) = read_write_file::readfile(filename1, &varsall, nentries);
-        let (values2, _groups2) = read_write_file::readfile(filename2, &varsall, nentries);
+        // let (mut values1, groups1) = read_write_file::readfile(filename1, &varsall, nentries);
+        // let (values2, _groups2) = read_write_file::readfile(filename2, &varsall, nentries);
 
-        let sums = uamutate(&mut values1, groups1, &values2);
+        // let sums = uamutate(&mut values1, groups1, &values2);
+        let file1 = File::open(filename1).unwrap();
+        let reader1 = BufReader::new(file1);
+        let file2 = File::open(filename2).unwrap();
+        let reader2 = BufReader::new(file2);
+        let sums = uamutate(reader1, reader2, &varsall, nentries);
 
         assert!(!sums.is_empty());
     }
