@@ -18,22 +18,24 @@ use nalgebra::{DMatrix, DVector, SVD};
 /// # Example
 ///
 /// ```
-/// use ndarray::array;
+/// use nalgebra::DMatrix;
 /// use uamutations::mlr::mlr_beta;
 /// // Example with 2 variables
-/// let data_2 = array![
-/// [1.0, 2.0, 3.0, 4.0, 5.0],
-/// [2.1, 3.2, 4.1, 5.2, 5.9],
+/// let data_2 = vec![
+///     1.0, 2.0, 3.0, 4.0, 5.0,
+///     2.1, 3.2, 4.1, 5.2, 5.9
 /// ];
+/// let data_2 = DMatrix::from_vec(5, 2, data_2);
 /// let result_2 = mlr_beta(&data_2);
 /// println!("Result with 2 variables: {:?}", result_2);
 ///
 /// // Example with 3 variables
-/// let data_3 = array![
-/// [1.0, 2.0, 3.0, 4.0, 5.0],
-/// [2.1, 3.2, 4.1, 5.2, 5.9],
-/// [3.0, 4.1, 4.9, 6.0, 7.1],
+/// let data_3 = vec![
+///     1.0, 2.0, 3.0, 4.0, 5.0,
+///     2.1, 3.2, 4.1, 5.2, 5.9,
+///     3.0, 4.1, 4.9, 6.0, 7.1,
 /// ];
+/// let data_3 = DMatrix::from_vec(5, 3, data_3);
 /// let result_3 = mlr_beta(&data_3);
 /// println!("Result with 3 variables: {:?}", result_3);
 /// ```
@@ -143,24 +145,22 @@ mod tests {
             1.0, 2.0, 3.0, 4.0, 5.0,
             2.1, 3.2, 4.1, 5.2, 5.9
         ];
-        let v1 = DMatrix::from_vec(5, 2, v1);
-        let mut v1 = v1.transpose();
+        let mut v1 = DMatrix::from_vec(5, 2, v1);
         let v1_orig = v1.clone();
         let v2 = vec![
             1.0, 2.0, 3.0, 4.0, 5.0,
             3.1, 4.3, 5.3, 6.5, 7.3
         ];
         let v2 = DMatrix::from_vec(5, 2, v2);
-        let v2 = v2.transpose();
         adj_for_beta(&mut v1, &v2);
         assert_ne!(
             v1, v1_orig,
             "v1 should be different from v1_orig after adj_for_beta"
         );
         assert_eq!(
-            v1.row(0),
-            v1_orig.row(0),
-            "Only the first row of v1 should be different"
+            v1.column(1),
+            v1_orig.column(1),
+            "Only the first column of v1 should be different"
         );
     }
 }
