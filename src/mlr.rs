@@ -5,7 +5,7 @@ use nalgebra::{DMatrix, DVector, SVD};
 ///
 /// # Arguments
 ///
-/// * `data` - An ndarray::Array2 object of [variables, observations].
+/// * `data` - An nalgebra::DMatrix object of [observations, variables].
 ///
 /// # Panics
 ///
