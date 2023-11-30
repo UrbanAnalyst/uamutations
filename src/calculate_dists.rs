@@ -178,8 +178,6 @@ mod tests {
         let values2 = vec![7.0, 9.0, 3.0, 2.0];
         let values1 = DMatrix::from_vec(4, 1, values1);
         let values2 = DMatrix::from_vec(4, 1, values2);
-        let values1 = values1.transpose();
-        let values2 = values2.transpose();
         let result = calculate_dists(&values1, &values2, true);
         assert_eq!(result, vec![1.0, 1.0, 3.0, 4.0]);
     }
@@ -190,8 +188,6 @@ mod tests {
         let values2 = vec![7.0, 9.0, 3.0, 2.0];
         let values1 = DMatrix::from_vec(4, 1, values1);
         let values2 = DMatrix::from_vec(4, 1, values2);
-        let values1 = values1.transpose();
-        let values2 = values2.transpose();
         let result = calculate_dists(&values1, &values2, false);
         assert_eq!(result, vec![1.0, 0.5, 0.75, 0.8]);
     }

@@ -197,7 +197,7 @@ mod tests {
         let (values2, groups2) = readfile(filename2, &varnames, nentries);
 
         assert_eq!(
-            values1.ncols(),
+            values1.nrows(),
             nentries,
             "values returned from readfile have wrong number of columns."
         );
@@ -207,7 +207,7 @@ mod tests {
             "The length of groups is incorrect."
         );
         assert_eq!(
-            values2.ncols(),
+            values2.nrows(),
             nentries,
             "values returned from readfile have wrong number of columns."
         );
