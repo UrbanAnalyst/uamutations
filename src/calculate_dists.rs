@@ -42,9 +42,12 @@ pub struct OrderingIndex {
 /// # Example
 ///
 /// ```
+/// use nalgebra::DMatrix;
 /// use uamutations::calculate_dists::calculate_dists;
-/// let values1 = ndarray::array![[1.0, 2.0, 4.0, 5.0]];
-/// let values2 = ndarray::array![[7.0, 9.0, 3.0, 2.0]];
+/// let values1 = vec![1.0, 2.0, 4.0, 5.0];
+/// let values1 = DMatrix::from_vec(4, 1, values1);
+/// let values2 = vec![7.0, 9.0, 3.0, 2.0];
+/// let values2 = DMatrix::from_vec(4, 1, values2);
 /// let result = calculate_dists(&values1, &values2, true);
 /// // For each values1, result will be (v2 - v1) for closest values2. So closest value to v1[3] =
 /// // 4, for example, is v2 = 3, and (v2 - v1) = 3 - 4 = -1. Or v1[4] = 5, with closest of 3, and
@@ -61,8 +64,8 @@ pub fn calculate_dists(values1: &DMatrix<f64>, values2: &DMatrix<f64>, absolute:
         "values1 and values2 must have the same dimensions."
     );
 
-    let values1_ref_var: Vec<f64> = values1.row(0).iter().cloned().collect();
-    let values2_ref_var: Vec<f64> = values2.row(0).iter().cloned().collect();
+    let values1_ref_var: Vec<f64> = values1.column(0).iter().cloned().collect();
+    let values2_ref_var: Vec<f64> = values2.column(0).iter().cloned().collect();
 
     let sorting_order = get_ordering_index(&values1_ref_var.to_vec(), false, false);
 
