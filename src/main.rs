@@ -22,6 +22,11 @@ fn main() {
     let varextra = vec!["natural".to_string(), "social_index".to_string()];
     // let varextra: Vec<String> = Vec::new();
 
-    let sums = uamutations::uamutate(FNAME1, FNAME2, VARNAME, varextra, NENTRIES);
+    let varsall: Vec<String> = vec![VARNAME.to_string()];
+    let varsall = [varsall, varextra].concat();
+    let (mut values1, groups1) = read_write_file::readfile(FNAME1, &varsall, NENTRIES);
+    let (values2, _groups2) = read_write_file::readfile(FNAME2, &varsall, NENTRIES);
+
+    let sums = uamutations::uamutate(&mut values1, groups1, &values2);
     read_write_file::write_file(&sums, OUTFILENAME);
 }
