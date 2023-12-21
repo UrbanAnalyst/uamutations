@@ -21,6 +21,11 @@ pub mod read_write_file;
 /// * `varextra` - Extra variables to be considered in the mutation.
 /// * `nentries` - The number of entries to be read from the JSON files.
 ///
+/// # Returns
+///
+/// A vector of length equal to number of distinct groups in the input data 'index' column, with
+/// each value quantifying the mean distance to the nearest points in the target distribution.
+///
 /// # Process
 ///
 /// 1. Reads the variable specified by `varname` from the files `fname1` and `fname2`.
@@ -64,6 +69,10 @@ pub fn uamutate(
 /// * `dists` - A vector of distances between entries in `values1` and closest values in `values2`.
 /// * `groups` - A vector of same length as `dists`, with 1-based indices of group numbers. There
 /// will generally be far fewer unique groups as there are entries in `dists`.
+///
+/// # Returns
+///
+/// A vector of mean distances within each group to the nearest points in the target distribution.
 fn aggregate_to_groups(dists: &[f64], groups: &[usize]) -> Vec<f64> {
     let groups_out: Vec<_> = groups.to_vec();
     let max_group = *groups_out.iter().max().unwrap();
