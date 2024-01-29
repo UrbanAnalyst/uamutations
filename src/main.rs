@@ -9,12 +9,13 @@ extern crate uamutations;
 pub mod mlr;
 pub mod read_write_file;
 
-const NENTRIES: usize = 10000;
+// const NENTRIES: usize = 10000;
+const NENTRIES: usize = 1000;
 
-const FNAME1: &str = "berlin.json";
-const FNAME2: &str = "paris.json";
-// const FNAME1: &str = "./test_resources/dat1.json";
-// const FNAME2: &str = "./test_resources/dat2.json";
+// const FNAME1: &str = "berlin.json";
+// const FNAME2: &str = "paris.json";
+const FNAME1: &str = "./test_resources/dat1.json";
+const FNAME2: &str = "./test_resources/dat2.json";
 const VARNAME: &str = "bike_index";
 const OUTFILENAME: &str = "output.txt";
 
