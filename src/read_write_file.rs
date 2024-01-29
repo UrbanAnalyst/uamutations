@@ -279,13 +279,12 @@ mod tests {
         file.read_to_string(&mut contents)
             .expect("Unable to read file");
 
-        // let expected_contents = "\
-        //     mutation\n\
-        //     1\n\
-        //     4.5\n\
-        //     3\n\
-        //     2\n";
-
-        // assert_eq!(contents, expected_contents);
+        let expected_contents = "\
+            original, transformed, absolute, relative\n\
+            1 \n\
+            4.5 \n\
+            3 \n\
+            2 \n";
+        assert_eq!(contents, expected_contents);
     }
 }
