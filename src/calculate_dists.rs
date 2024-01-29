@@ -198,8 +198,13 @@ mod tests {
         let values2 = DMatrix::from_vec(4, 1, values2);
         let result = calculate_dists(&values1, &values2);
         assert_eq!(result.ncols(), 2, "Result should have 2 columns");
-        // assert_eq!(result.column(0), values1.column(0));
-        // let col2 = result.column(1).iter().cloned().collect::<Vec<f64>>();
-        // assert_eq!(col2, vec![1.0, 1.0, 3.0, 4.0]);
+        // First col has absolute differences:
+        let res_col0 = result.column(0).iter().cloned().collect::<Vec<f64>>();
+        let res0 = vec![1.0, 1.0, 3.0, 4.0];
+        assert_eq!(res_col0, res0);
+        // Second column holds differences relative to the initial values:
+        let res_col1 = result.column(1).iter().cloned().collect::<Vec<f64>>();
+        let res1 = vec![1.0, 0.5, 0.75, 0.8];
+        assert_eq!(res_col1, res1);
     }
 }
