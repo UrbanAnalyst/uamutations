@@ -49,11 +49,14 @@ pub struct OrderingIndex {
 /// let values2 = vec![7.0, 9.0, 3.0, 2.0];
 /// let values2 = DMatrix::from_vec(4, 1, values2);
 /// let result = calculate_dists(&values1, &values2);
+/// // The first column of `result` contains the minimal absolute differences. Paired sequences are
+/// // (1, 2), (2, 3), (4, 7), (5, 9), with differences of (1, 1, 3, 4).
 /// let res_col0 = result.column(0).iter().cloned().collect::<Vec<f64>>();
-/// let res0 = vec![1.0, 3.0, 1.0, 0.75];
+/// let res0 = vec![1.0, 1.0, 3.0, 4.0];
 /// assert_eq!(res_col0, res0);
+/// // The second column then holds differences relative to the initial values:
 /// let res_col1 = result.column(1).iter().cloned().collect::<Vec<f64>>();
-/// let res1 = vec![1.0, 4.0, 0.5, 0.8];
+/// let res1 = vec![1.0, 0.5, 0.75, 0.8];
 /// assert_eq!(res_col1, res1);
 /// ```
 pub fn calculate_dists(values1: &DMatrix<f64>, values2: &DMatrix<f64>) -> DMatrix<f64> {
@@ -104,10 +107,11 @@ pub fn calculate_dists(values1: &DMatrix<f64>, values2: &DMatrix<f64>) -> DMatri
         .collect();
 
     DMatrix::from_row_slice(
-        differences_abs.len(),
         2,
+        differences_abs.len(),
         &[differences_abs, differences_rel].concat(),
     )
+    .transpose()
 }
 
 /// Returns a vector of indices that would sort the input vector in ascending or descending order.
