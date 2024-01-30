@@ -17,6 +17,18 @@ use std::collections::HashMap;
 ///
 /// A transformed version of `values`, with the first column being transformed according to the
 /// tables specified here.
+///
+/// # Examples
+///
+/// use nalgebra::DMatrix;
+///
+/// let values = DMatrix::from_vec(2, 2, vec![1.0, 2.0, 3.0, 4.0]);
+/// let varname = "bike_index".to_string();
+/// let result = transform_values(&values, &varname);
+/// assert_eq!(result[(0, 0)], 0.9);
+/// assert_eq!(result[(1, 0)], 0.8);
+/// assert_eq!(result[(0, 1)], 0.3);
+/// assert_eq!(result[(1, 1)], 0.4);
 pub fn transform_values(values: &DMatrix<f64>, varname: &str) -> DMatrix<f64> {
     assert!(!values.is_empty(), "values must not be empty");
 
@@ -49,7 +61,6 @@ mod tests {
         let varname = "bike_index".to_string();
 
         let result = transform_values(&values, &varname);
-        println!("result: {:?}", result);
 
         assert_eq!(result[(0, 0)], 0.9);
         assert_eq!(result[(1, 0)], 0.8);
