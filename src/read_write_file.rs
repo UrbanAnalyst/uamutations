@@ -155,10 +155,9 @@ pub fn write_file(sums: &DMatrix<f64>, filename: &str) {
     writeln!(file, "original, transformed, absolute, relative").expect("Unable to write to file");
 
     for i in 0..sums.nrows() {
-        for j in 0..sums.ncols() {
-            write!(file, "{} ", sums[(i, j)]).expect("Unable to write to file");
-        }
-        writeln!(file).expect("Unable to write to file");
+        let row: Vec<f64> = sums.row(i).iter().cloned().collect();
+        let row_str: Vec<String> = row.iter().map(|&x| format!("{}", x)).collect();
+        writeln!(file, "{}", row_str.join(",")).expect("Unable to write to file");
     }
 }
 
@@ -281,10 +280,10 @@ mod tests {
 
         let expected_contents = "\
             original, transformed, absolute, relative\n\
-            1 \n\
-            4.5 \n\
-            3 \n\
-            2 \n";
+            1\n\
+            4.5\n\
+            3\n\
+            2\n";
         assert_eq!(contents, expected_contents);
     }
 }
