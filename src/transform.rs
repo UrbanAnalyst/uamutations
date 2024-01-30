@@ -24,6 +24,7 @@ pub fn transform_values(values: &DMatrix<f64>, varname: &str) -> DMatrix<f64> {
 
     let mut lookup_table: HashMap<&str, f64> = HashMap::new();
     lookup_table.insert("bike_index", 1.0);
+    lookup_table.insert("nature_index", 1.0);
 
     if let Some(&value) = lookup_table.get(varname) {
         for val in &mut values_ref_var {
