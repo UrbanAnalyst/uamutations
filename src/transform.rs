@@ -37,3 +37,23 @@ pub fn transform_values(values: &DMatrix<f64>, varname: &str) -> DMatrix<f64> {
     result.set_column(0, &new_col);
     result
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use nalgebra::DMatrix;
+
+    #[test]
+    fn test_transform_values() {
+        let values = DMatrix::from_vec(2, 2, vec![0.1, 0.2, 0.3, 0.4]);
+        let varname = "bike_index".to_string();
+
+        let result = transform_values(&values, &varname);
+        println!("result: {:?}", result);
+
+        assert_eq!(result[(0, 0)], 0.9);
+        assert_eq!(result[(1, 0)], 0.8);
+        assert_eq!(result[(0, 1)], 0.3);
+        assert_eq!(result[(1, 1)], 0.4);
+    }
+}
