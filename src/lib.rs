@@ -57,8 +57,9 @@ pub fn uamutate(
         mlr::adj_for_beta(&mut values1, &values2);
     }
 
-    values1 = transform::transform_values(&values1, &varnames[0]);
-    values2 = transform::transform_values(&values2, &varnames[0]);
+    // Transform values for variables specified in 'lookup_table' of 'transform.rs':
+    transform::transform_values(&mut values1, &varnames[0]);
+    transform::transform_values(&mut values2, &varnames[0]);
 
     // Then calculate successive differences between the two sets of values. These are the
     // distances by which `values1` need to be moved in the first dimension only to match the
