@@ -9,6 +9,7 @@ use std::io::BufReader;
 pub mod calculate_dists;
 pub mod mlr;
 pub mod read_write_file;
+pub mod transform;
 
 /// This is the main function, which reads data from two JSON files, calculates absolute and
 /// relative differences between the two sets of data, and writes the results to an output file.
@@ -49,12 +50,15 @@ pub fn uamutate(
 ) -> DMatrix<f64> {
     // Read contents of files:
     let (mut values1, groups1) = read_write_file::readfile(reader1, varnames, nentries);
-    let (values2, _groups2) = read_write_file::readfile(reader2, varnames, nentries);
+    let (mut values2, _groups2) = read_write_file::readfile(reader2, varnames, nentries);
     // Adjust `values1` by removing its dependence on varextra, and replacing with the dependnece
     // of values2 on same variables (but only if `varextra` are specified):
     if values1.nrows() > 1 {
         mlr::adj_for_beta(&mut values1, &values2);
     }
+
+    values1 = transform::transform_values(&values1, &varnames[0]);
+    values2 = transform::transform_values(&values2, &varnames[0]);
 
     // Then calculate successive differences between the two sets of values. These are the
     // distances by which `values1` need to be moved in the first dimension only to match the
