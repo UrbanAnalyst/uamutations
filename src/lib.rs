@@ -65,7 +65,10 @@ pub fn uamutate(
     // distances by which `values1` need to be moved in the first dimension only to match the
     // closest equivalent values of `values2`.
     let dists = calculate_dists::calculate_dists(&values1, &values2);
-    aggregate_to_groups(&values1, &dists, &groups1)
+    // These variables are specified in uaengine/R/ua-export.R:
+    let log_scale =
+        varnames[0] == "parking" || varnames[0] == "school_dist" || varnames[0] == "intervals";
+    aggregate_to_groups(&values1, &dists, &groups1, &log_scale)
 }
 
 /// Loop over all columns of the `dists` `DMatrix` object, and aggregate groups for each column.
@@ -91,6 +94,7 @@ fn aggregate_to_groups(
     values1: &DMatrix<f64>,
     dists: &DMatrix<f64>,
     groups: &[usize],
+    log_scale: &bool,
 ) -> DMatrix<f64> {
     assert!(dists.ncols() == 2, "dists must have two columns");
     assert!(
@@ -104,7 +108,7 @@ fn aggregate_to_groups(
 
     // Aggregate original values first:
     let values1_first_col: Vec<f64> = values1.column(0).iter().cloned().collect();
-    let values1_aggregated = aggregate_to_groups_single_col(&values1_first_col, groups);
+    let values1_aggregated = aggregate_to_groups_single_col(&values1_first_col, groups, log_scale);
 
     // Then generate absolute transformed value from original value plus absolute distance:
     let dists_abs: Vec<f64> = dists.column(0).iter().cloned().collect();
@@ -115,19 +119,19 @@ fn aggregate_to_groups(
         .collect();
     // And aggregate those into groups:
     let values1_transformed_aggregated =
-        aggregate_to_groups_single_col(&values1_transformed, groups);
+        aggregate_to_groups_single_col(&values1_transformed, groups, log_scale);
     assert!(
         values1_transformed_aggregated.len() == values1_aggregated.len(),
         "values1_aggregated and values1_transformed_aggregated have different lengths"
     );
 
-    let dists_abs_aggregated = aggregate_to_groups_single_col(&dists_abs, groups);
+    let dists_abs_aggregated = aggregate_to_groups_single_col(&dists_abs, groups, log_scale);
     assert!(
         dists_abs_aggregated.len() == values1_aggregated.len(),
         "values1_aggregated and dists_abs_aggregated have different lengths"
     );
     let dists_rel: Vec<f64> = dists.column(1).iter().cloned().collect();
-    let dists_rel_aggregated = aggregate_to_groups_single_col(&dists_rel, groups);
+    let dists_rel_aggregated = aggregate_to_groups_single_col(&dists_rel, groups, log_scale);
     assert!(
         dists_rel_aggregated.len() == values1_aggregated.len(),
         "values1_aggregated and dists_rel_aggregated have different lengths"
@@ -156,7 +160,7 @@ fn aggregate_to_groups(
 /// # Returns
 ///
 /// A vector of mean distances within each group to the nearest points in the target distribution.
-fn aggregate_to_groups_single_col(dists: &[f64], groups: &[usize]) -> Vec<f64> {
+fn aggregate_to_groups_single_col(dists: &[f64], groups: &[usize], log_scale: &bool) -> Vec<f64> {
     let groups_out: Vec<_> = groups.to_vec();
     let max_group = *groups_out.iter().max().unwrap();
     let mut counts = vec![0u32; max_group + 1];
@@ -164,7 +168,11 @@ fn aggregate_to_groups_single_col(dists: &[f64], groups: &[usize]) -> Vec<f64> {
 
     for (i, &group) in groups_out.iter().enumerate() {
         counts[group] += 1;
-        sums[group] += dists[i];
+        if *log_scale {
+            sums[group] += dists[i].log10();
+        } else {
+            sums[group] += dists[i];
+        }
     }
 
     // Then convert sums to mean values by dividing by counts:
@@ -174,6 +182,9 @@ fn aggregate_to_groups_single_col(dists: &[f64], groups: &[usize]) -> Vec<f64> {
         } else {
             0.0
         };
+        if *log_scale {
+            *sum = 10.0f64.powf(*sum);
+        }
     }
 
     // First value of `sums` is junk because `groups` are 1-based R values:
