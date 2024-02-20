@@ -8,6 +8,7 @@ use std::io::BufReader;
 extern crate uamutations;
 pub mod mlr;
 pub mod read_write_file;
+pub mod utils;
 
 const NENTRIES: usize = 10000;
 // const NENTRIES: usize = 1000;
@@ -18,7 +19,8 @@ const FNAME1: &str = "/data/mega/code/repos/UrbanAnalyst/CityDataPrivate/berlin/
 const FNAME2: &str = "/data/mega/code/repos/UrbanAnalyst/CityDataPrivate/paris/dataraw.json";
 // const FNAME1: &str = "./test_resources/dat1.json";
 // const FNAME2: &str = "./test_resources/dat2.json";
-const VARNAME: &str = "bike_index";
+// const VARNAME: &str = "bike_index";
+const VARNAME: &str = "school_dist";
 const OUTFILENAME: &str = "output.txt";
 
 /// Entry point for the Urban Analyst mutation algorithm.
