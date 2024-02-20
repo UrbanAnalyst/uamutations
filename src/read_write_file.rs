@@ -94,8 +94,6 @@ pub fn readfile(
             varnames[i]
         );
     }
-    println!("{} rows read from JSON file", values.nrows());
-    println!("Length of city_group = {} ", city_group.len());
     assert!(
         city_group.len() == values.nrows(),
         "The length of city_group does not match the number of rows in values"

@@ -67,32 +67,13 @@ pub fn uamutate(
             .iter_mut()
             .for_each(|x| *x = if *x > 0.0 { x.log10() } else { epsilon });
     }
+    let (mean1, sd1) = utils::mean_sd_dmat(&values1);
 
     // Adjust `values1` by removing its dependence on varextra, and replacing with the dependnece
     // of values2 on same variables (but only if `varextra` are specified):
-    println!(
-        "value1 BEFORE: {}",
-        values1
-            .iter()
-            .take(10)
-            .map(|&x| format!("{:.2}", x))
-            .collect::<Vec<_>>()
-            .join(", ")
-    );
-    let (mean1, sd1) = utils::mean_sd_dmat(&values1);
-
     if values1.nrows() > 1 {
         mlr::adj_for_beta(&mut values1, &values2);
     }
-    println!(
-        "value1 AFTER: {}",
-        values1
-            .iter()
-            .take(10)
-            .map(|&x| format!("{:.2}", x))
-            .collect::<Vec<_>>()
-            .join(", ")
-    );
     let (mean2, sd2) = utils::mean_sd_dmat(&values1);
     println!("mean1: {}, mean2: {}", mean1, mean2);
     println!("sd1: {}, sd2: {}", sd1, sd2);
