@@ -65,14 +65,14 @@ pub fn uamutate(
         mlr::adj_for_beta(&mut values1, &values2);
     }
 
-    // Transform values for variables specified in 'lookup_table' of 'transform.rs':
+    // Invert values for variables specified in 'lookup_table' of 'transform.rs':
     transform::transform_invert_values(&mut values1, &varnames[0]);
     transform::transform_invert_values(&mut values2, &varnames[0]);
 
     // Then calculate successive differences between the two sets of values. These are the
     // distances by which `values1` need to be moved in the first dimension only to match the
     // closest equivalent values of `values2`.
-    let dists = calculate_dists::calculate_dists(&values1, &values2);
+    let dists = calculate_dists::calculate_dists(&values1, &values2, &log_scale);
     aggregate_to_groups(&values1, &dists, &groups1, &log_scale)
 }
 
