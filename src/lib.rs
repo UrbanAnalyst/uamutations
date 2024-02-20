@@ -15,6 +15,8 @@ pub mod utils;
 /// This is the main function, which reads data from two JSON files, calculates absolute and
 /// relative differences between the two sets of data, and writes the results to an output file.
 ///
+/// Some variables have to be log-transformed prior to any analytic routines.
+///
 /// # Arguments
 ///
 /// * `fname1` - Path to local JSON file with data which are to be mutated.
@@ -53,20 +55,8 @@ pub fn uamutate(
     let (mut values1, groups1) = read_write_file::readfile(reader1, varnames, nentries);
     let (mut values2, _groups2) = read_write_file::readfile(reader2, varnames, nentries);
 
-    // Log-transform selected variables, as specified in uaengine/R/ua-export.R:
-    let log_scale =
-        varnames[0] == "parking" || varnames[0] == "school_dist" || varnames[0] == "intervals";
-    let epsilon = -10.; // Small constant of log10(1e-10) to avoid NaN from log(<= 0)
-    if log_scale {
-        values1
-            .column_mut(0)
-            .iter_mut()
-            .for_each(|x| *x = if *x > 0.0 { x.log10() } else { epsilon });
-        values2
-            .column_mut(0)
-            .iter_mut()
-            .for_each(|x| *x = if *x > 0.0 { x.log10() } else { epsilon });
-    }
+    let log_scale = utils::log_transform(&mut values1, varnames);
+    let _log_scale = utils::log_transform(&mut values2, varnames);
 
     // Adjust `values1` by removing its dependence on varextra, and replacing with the dependnece
     // of values2 on same variables (but only if `varextra` are specified):

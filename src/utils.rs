@@ -1,5 +1,51 @@
 use nalgebra::{DMatrix, DVector};
 
+/// Convert values for selected columns of an input variable to logarithmic scales.
+///
+/// # Arguments
+///
+/// * `values` - Matrix of values to be transformed.
+///
+/// # Returns
+///
+/// Matrix of (potentially) transformed values.
+///
+/// # Panics
+///
+/// This function will panic if `values` is empty.
+///
+/// # Example
+/// ```
+/// use nalgebra::DMatrix;
+/// use uamutations::utils::log_transform;
+/// let values = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
+/// let mut values = DMatrix::from_vec(3, 2, values);
+/// let log_scale = log_transform(&mut values, &vec!["parking".to_string(), "school_dist".to_string()]);
+/// assert_eq!(log_scale, true);
+/// ```
+pub fn log_transform(values: &mut DMatrix<f64>, varnames: &[String]) -> bool {
+    assert!(!values.is_empty(), "values must not be empty");
+
+    // These selected variables to be log-transformed are specified in uaengine/R/ua-export.R:
+    let log_vars = ["parking", "school_dist", "intervals"];
+    let epsilon = -10.; // Small constant of log10(1e-10) to avoid NaN from log(<= 0)
+
+    let mut log_scale = false;
+    for (i, var) in varnames.iter().enumerate() {
+        if log_vars.contains(&var.as_str()) {
+            if i == 0 {
+                log_scale = true;
+            }
+            values
+                .column_mut(i)
+                .iter_mut()
+                .for_each(|x| *x = if *x > 0.0 { x.log10() } else { epsilon });
+        }
+    }
+
+    log_scale
+}
+
 /// Calcualte mean and standard deviation of first column of input `values` in DMatrix format.
 ///
 /// # Arguments
