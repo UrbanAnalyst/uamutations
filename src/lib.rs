@@ -115,8 +115,10 @@ fn aggregate_to_groups(
     // transform back after aggregation:
     let mut values1_first_col: Vec<f64> = values1.column(0).iter().cloned().collect();
     let mut values1_aggregated = aggregate_to_groups_single_col(&values1_first_col, groups, &false);
-    values1_aggregated = values1_aggregated.iter().map(|&x| 10f64.powf(x)).collect();
-    values1_first_col = values1_first_col.iter().map(|&x| 10f64.powf(x)).collect();
+    if *log_scale {
+        values1_aggregated = values1_aggregated.iter().map(|&x| 10f64.powf(x)).collect();
+        values1_first_col = values1_first_col.iter().map(|&x| 10f64.powf(x)).collect();
+    }
 
     // Then generate absolute transformed value from original value plus absolute distance:
     let dists_abs: Vec<f64> = dists.column(0).iter().cloned().collect();
