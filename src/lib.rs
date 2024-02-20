@@ -10,6 +10,7 @@ pub mod calculate_dists;
 pub mod mlr;
 pub mod read_write_file;
 pub mod transform;
+pub mod utils;
 
 /// This is the main function, which reads data from two JSON files, calculates absolute and
 /// relative differences between the two sets of data, and writes the results to an output file.
@@ -51,11 +52,50 @@ pub fn uamutate(
     // Read contents of files:
     let (mut values1, groups1) = read_write_file::readfile(reader1, varnames, nentries);
     let (mut values2, _groups2) = read_write_file::readfile(reader2, varnames, nentries);
+
+    // Log-transform selected variables, as specified in uaengine/R/ua-export.R:
+    let log_scale =
+        varnames[0] == "parking" || varnames[0] == "school_dist" || varnames[0] == "intervals";
+    let epsilon = -10.; // Small constant of log10(1e-10) to avoid NaN from log(<= 0)
+    if log_scale {
+        values1
+            .column_mut(0)
+            .iter_mut()
+            .for_each(|x| *x = if *x > 0.0 { x.log10() } else { epsilon });
+        values2
+            .column_mut(0)
+            .iter_mut()
+            .for_each(|x| *x = if *x > 0.0 { x.log10() } else { epsilon });
+    }
+
     // Adjust `values1` by removing its dependence on varextra, and replacing with the dependnece
     // of values2 on same variables (but only if `varextra` are specified):
+    println!(
+        "value1 BEFORE: {}",
+        values1
+            .iter()
+            .take(10)
+            .map(|&x| format!("{:.2}", x))
+            .collect::<Vec<_>>()
+            .join(", ")
+    );
+    let (mean1, sd1) = utils::mean_sd_dmat(&values1);
+
     if values1.nrows() > 1 {
         mlr::adj_for_beta(&mut values1, &values2);
     }
+    println!(
+        "value1 AFTER: {}",
+        values1
+            .iter()
+            .take(10)
+            .map(|&x| format!("{:.2}", x))
+            .collect::<Vec<_>>()
+            .join(", ")
+    );
+    let (mean2, sd2) = utils::mean_sd_dmat(&values1);
+    println!("mean1: {}, mean2: {}", mean1, mean2);
+    println!("sd1: {}, sd2: {}", sd1, sd2);
 
     // Transform values for variables specified in 'lookup_table' of 'transform.rs':
     transform::transform_values(&mut values1, &varnames[0]);
@@ -65,9 +105,6 @@ pub fn uamutate(
     // distances by which `values1` need to be moved in the first dimension only to match the
     // closest equivalent values of `values2`.
     let dists = calculate_dists::calculate_dists(&values1, &values2);
-    // These variables are specified in uaengine/R/ua-export.R:
-    let log_scale =
-        varnames[0] == "parking" || varnames[0] == "school_dist" || varnames[0] == "intervals";
     aggregate_to_groups(&values1, &dists, &groups1, &log_scale)
 }
 
@@ -109,6 +146,7 @@ fn aggregate_to_groups(
     // Aggregate original values first:
     let values1_first_col: Vec<f64> = values1.column(0).iter().cloned().collect();
     let values1_aggregated = aggregate_to_groups_single_col(&values1_first_col, groups, log_scale);
+    // println!("values1_aggregated: {}", values1_aggregated.iter().map(|&x| format!("{:.2}", x)).collect::<Vec<_>>().join(", "));
 
     // Then generate absolute transformed value from original value plus absolute distance:
     let dists_abs: Vec<f64> = dists.column(0).iter().cloned().collect();
@@ -117,6 +155,8 @@ fn aggregate_to_groups(
         .zip(dists_abs.iter())
         .map(|(&a, &b)| a + b)
         .collect();
+    // println!("values1_transformed: {:?}", values1_transformed);
+    // println!();
     // And aggregate those into groups:
     let values1_transformed_aggregated =
         aggregate_to_groups_single_col(&values1_transformed, groups, log_scale);
@@ -124,6 +164,7 @@ fn aggregate_to_groups(
         values1_transformed_aggregated.len() == values1_aggregated.len(),
         "values1_aggregated and values1_transformed_aggregated have different lengths"
     );
+    // println!("values1_aggregated: {:?}", values1_transformed_aggregated);
 
     let dists_abs_aggregated = aggregate_to_groups_single_col(&dists_abs, groups, log_scale);
     assert!(
