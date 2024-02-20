@@ -1,6 +1,6 @@
 use nalgebra::{DMatrix, DVector, SVD};
 
-use crate::utils;
+use super::utils;
 
 /// Calculates beta coefficients (slopes) of a multiple linear regression of dimensions [1.., _] of
 /// input array against first dimension [0, _].
