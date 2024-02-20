@@ -1,7 +1,8 @@
 use nalgebra::{DMatrix, DVector};
 use std::collections::HashMap;
 
-/// Transform input values according to specified schema for each input variable.
+/// Transform input values according to specified schema for each input variable. Variables in the
+/// lookup table are inverted.
 ///
 /// # Arguments
 ///
@@ -24,12 +25,12 @@ use std::collections::HashMap;
 ///
 /// let values = DMatrix::from_vec(2, 2, vec![1.0, 2.0, 3.0, 4.0]);
 /// let varname = "bike_index".to_string();
-/// let result = transform_values(&values, &varname);
+/// let result = transform_invert_values(&values, &varname);
 /// assert_eq!(result[(0, 0)], 0.9);
 /// assert_eq!(result[(1, 0)], 0.8);
 /// assert_eq!(result[(0, 1)], 0.3);
 /// assert_eq!(result[(1, 1)], 0.4);
-pub fn transform_values(values: &mut DMatrix<f64>, varname: &str) {
+pub fn transform_invert_values(values: &mut DMatrix<f64>, varname: &str) {
     assert!(!values.is_empty(), "values must not be empty");
 
     let mut values_ref_var: Vec<f64> = values.column(0).iter().cloned().collect();
@@ -54,11 +55,11 @@ mod tests {
     use nalgebra::DMatrix;
 
     #[test]
-    fn test_transform_values() {
+    fn test_transform_invert_values() {
         let mut values = DMatrix::from_vec(2, 2, vec![0.1, 0.2, 0.3, 0.4]);
         let varname = "bike_index".to_string();
 
-        transform_values(&mut values, &varname);
+        transform_invert_values(&mut values, &varname);
 
         assert_eq!(values[(0, 0)], 0.9);
         assert_eq!(values[(1, 0)], 0.8);

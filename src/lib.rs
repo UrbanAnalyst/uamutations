@@ -15,7 +15,8 @@ pub mod utils;
 /// This is the main function, which reads data from two JSON files, calculates absolute and
 /// relative differences between the two sets of data, and writes the results to an output file.
 ///
-/// Some variables have to be log-transformed prior to any analytic routines.
+/// Some variables have to be log-transformed prior to any analytic routines. The names of these
+/// are defined in utils::log_transform.
 ///
 /// # Arguments
 ///
@@ -65,8 +66,8 @@ pub fn uamutate(
     }
 
     // Transform values for variables specified in 'lookup_table' of 'transform.rs':
-    transform::transform_values(&mut values1, &varnames[0]);
-    transform::transform_values(&mut values2, &varnames[0]);
+    transform::transform_invert_values(&mut values1, &varnames[0]);
+    transform::transform_invert_values(&mut values2, &varnames[0]);
 
     // Then calculate successive differences between the two sets of values. These are the
     // distances by which `values1` need to be moved in the first dimension only to match the
