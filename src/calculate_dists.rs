@@ -153,7 +153,6 @@ pub fn calculate_dists(
     let differences_rel: Vec<f64> = values1_sorted
         .iter()
         .zip(values2_sorted.iter())
-        // .map(|(&a, &b)| (b - a) / a)
         .map(|(&a, &b)| {
             if a <= eps || b <= eps {
                 0.0
