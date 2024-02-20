@@ -111,9 +111,12 @@ fn aggregate_to_groups(
         "groups must have same length as values1"
     );
 
-    // Aggregate original values first:
-    let values1_first_col: Vec<f64> = values1.column(0).iter().cloned().collect();
-    let values1_aggregated = aggregate_to_groups_single_col(&values1_first_col, groups, log_scale);
+    // Aggregate original values first. These are already log-scaled, so set flag to `false`, and
+    // transform back after aggregation:
+    let mut values1_first_col: Vec<f64> = values1.column(0).iter().cloned().collect();
+    let mut values1_aggregated = aggregate_to_groups_single_col(&values1_first_col, groups, &false);
+    values1_aggregated = values1_aggregated.iter().map(|&x| 10f64.powf(x)).collect();
+    values1_first_col = values1_first_col.iter().map(|&x| 10f64.powf(x)).collect();
 
     // Then generate absolute transformed value from original value plus absolute distance:
     let dists_abs: Vec<f64> = dists.column(0).iter().cloned().collect();
@@ -122,7 +125,9 @@ fn aggregate_to_groups(
         .zip(dists_abs.iter())
         .map(|(&a, &b)| a + b)
         .collect();
-    // And aggregate those into groups:
+    // And aggregate those into groups. The `log_scale` flag ensures that variables which should be
+    // log-scaled are first aggregated in log form, then the aggregate values transformed back to
+    // 10^x.
     let values1_transformed_aggregated =
         aggregate_to_groups_single_col(&values1_transformed, groups, log_scale);
     assert!(
@@ -130,13 +135,17 @@ fn aggregate_to_groups(
         "values1_aggregated and values1_transformed_aggregated have different lengths"
     );
 
-    let dists_abs_aggregated = aggregate_to_groups_single_col(&dists_abs, groups, log_scale);
+    // Even log-scaled variables at that point have been aggregated in log-space, so distributions
+    // are far more normal than those of underlying values, and aggregation here is direct. Plus
+    // for `dists_abs` and `dists_rel`, values can also be < 0, so log-scaling can't be used in
+    // this aggregation anyway.
+    let dists_abs_aggregated = aggregate_to_groups_single_col(&dists_abs, groups, &false);
     assert!(
         dists_abs_aggregated.len() == values1_aggregated.len(),
         "values1_aggregated and dists_abs_aggregated have different lengths"
     );
     let dists_rel: Vec<f64> = dists.column(1).iter().cloned().collect();
-    let dists_rel_aggregated = aggregate_to_groups_single_col(&dists_rel, groups, log_scale);
+    let dists_rel_aggregated = aggregate_to_groups_single_col(&dists_rel, groups, &false);
     assert!(
         dists_rel_aggregated.len() == values1_aggregated.len(),
         "values1_aggregated and dists_rel_aggregated have different lengths"
@@ -173,7 +182,11 @@ fn aggregate_to_groups_single_col(dists: &[f64], groups: &[usize], log_scale: &b
 
     for (i, &group) in groups_out.iter().enumerate() {
         counts[group] += 1;
-        sums[group] += dists[i];
+        sums[group] += if *log_scale {
+            dists[i].log10()
+        } else {
+            dists[i]
+        };
     }
 
     // Then convert sums to mean values by dividing by counts:
