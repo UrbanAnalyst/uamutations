@@ -1,7 +1,10 @@
-all: build run test fmt lint
+all: buildall run test fmt lint
 
 # Note that 'make help' needs the '## <stuff>' to parse commands
 build: ## main build fn
+	cargo build --lib
+
+buildall:
 	cargo build
 
 run: ## run binary
