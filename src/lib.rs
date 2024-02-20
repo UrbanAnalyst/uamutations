@@ -67,16 +67,12 @@ pub fn uamutate(
             .iter_mut()
             .for_each(|x| *x = if *x > 0.0 { x.log10() } else { epsilon });
     }
-    let (mean1, sd1) = utils::mean_sd_dmat(&values1);
 
     // Adjust `values1` by removing its dependence on varextra, and replacing with the dependnece
     // of values2 on same variables (but only if `varextra` are specified):
     if values1.nrows() > 1 {
         mlr::adj_for_beta(&mut values1, &values2);
     }
-    let (mean2, sd2) = utils::mean_sd_dmat(&values1);
-    println!("mean1: {}, mean2: {}", mean1, mean2);
-    println!("sd1: {}, sd2: {}", sd1, sd2);
 
     // Transform values for variables specified in 'lookup_table' of 'transform.rs':
     transform::transform_values(&mut values1, &varnames[0]);
@@ -127,7 +123,6 @@ fn aggregate_to_groups(
     // Aggregate original values first:
     let values1_first_col: Vec<f64> = values1.column(0).iter().cloned().collect();
     let values1_aggregated = aggregate_to_groups_single_col(&values1_first_col, groups, log_scale);
-    // println!("values1_aggregated: {}", values1_aggregated.iter().map(|&x| format!("{:.2}", x)).collect::<Vec<_>>().join(", "));
 
     // Then generate absolute transformed value from original value plus absolute distance:
     let dists_abs: Vec<f64> = dists.column(0).iter().cloned().collect();
@@ -136,8 +131,6 @@ fn aggregate_to_groups(
         .zip(dists_abs.iter())
         .map(|(&a, &b)| a + b)
         .collect();
-    // println!("values1_transformed: {:?}", values1_transformed);
-    // println!();
     // And aggregate those into groups:
     let values1_transformed_aggregated =
         aggregate_to_groups_single_col(&values1_transformed, groups, log_scale);
@@ -145,7 +138,6 @@ fn aggregate_to_groups(
         values1_transformed_aggregated.len() == values1_aggregated.len(),
         "values1_aggregated and values1_transformed_aggregated have different lengths"
     );
-    // println!("values1_aggregated: {:?}", values1_transformed_aggregated);
 
     let dists_abs_aggregated = aggregate_to_groups_single_col(&dists_abs, groups, log_scale);
     assert!(
@@ -190,11 +182,7 @@ fn aggregate_to_groups_single_col(dists: &[f64], groups: &[usize], log_scale: &b
 
     for (i, &group) in groups_out.iter().enumerate() {
         counts[group] += 1;
-        if *log_scale {
-            sums[group] += dists[i].log10();
-        } else {
-            sums[group] += dists[i];
-        }
+        sums[group] += dists[i];
     }
 
     // Then convert sums to mean values by dividing by counts:
