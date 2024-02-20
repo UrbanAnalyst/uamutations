@@ -87,12 +87,6 @@ pub fn readfile(
         }
     }
 
-    if !std_index.is_empty() {
-        for i in &std_index {
-            standardise_array(&mut values, *i);
-        }
-    }
-
     for (i, exists) in var_exists.iter().enumerate() {
         assert!(
             *exists,
