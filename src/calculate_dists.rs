@@ -91,41 +91,6 @@ pub fn calculate_dists(
         values1_sorted.iter_mut().for_each(|x| *x = 10f64.powf(*x));
         values2_sorted.iter_mut().for_each(|x| *x = 10f64.powf(*x));
     }
-    let nvals = 10;
-    println!(
-        "values1_sorted: {:4} ... {:4}",
-        values1_sorted
-            .iter()
-            .take(nvals)
-            .map(|&x| format!("{:.4}", x))
-            .collect::<Vec<_>>()
-            .join(" "),
-        values1_sorted
-            .iter()
-            .rev()
-            .take(nvals)
-            .map(|&x| format!("{:.4}", x))
-            .collect::<Vec<_>>()
-            .join(" ")
-    );
-    println!("---------------------------------");
-    println!(
-        "values2_sorted: {:4} ... {:4}",
-        values2_sorted
-            .iter()
-            .take(nvals)
-            .map(|&x| format!("{:.4}", x))
-            .collect::<Vec<_>>()
-            .join(" "),
-        values2_sorted
-            .iter()
-            .rev()
-            .take(nvals)
-            .map(|&x| format!("{:.4}", x))
-            .collect::<Vec<_>>()
-            .join(" ")
-    );
-    println!("---------------------------------");
 
     // Calculate conseqcutive differences between the two vectors:
     let differences_abs: Vec<f64> = values1_sorted
@@ -133,22 +98,6 @@ pub fn calculate_dists(
         .zip(values2_sorted.iter())
         .map(|(&a, &b)| b - a)
         .collect();
-    println!(
-        "differences_abs: {:4} ... {:4}",
-        differences_abs
-            .iter()
-            .take(nvals)
-            .map(|&x| format!("{:.4}", x))
-            .collect::<Vec<_>>()
-            .join(" "),
-        differences_abs
-            .iter()
-            .rev()
-            .take(nvals)
-            .map(|&x| format!("{:.4}", x))
-            .collect::<Vec<_>>()
-            .join(" ")
-    );
     let eps = 1.0e-10;
     let differences_rel: Vec<f64> = values1_sorted
         .iter()
@@ -161,22 +110,6 @@ pub fn calculate_dists(
             }
         })
         .collect();
-    println!(
-        "differences_rel: {:4} ... {:4}",
-        differences_rel
-            .iter()
-            .take(nvals)
-            .map(|&x| format!("{:.4}", x))
-            .collect::<Vec<_>>()
-            .join(" "),
-        differences_rel
-            .iter()
-            .rev()
-            .take(nvals)
-            .map(|&x| format!("{:.4}", x))
-            .collect::<Vec<_>>()
-            .join(" ")
-    );
     // And re-order those differences according to sorting_order.index_reorder, so they align with
     // the original order of `values1`:
     let differences_abs: Vec<f64> = sorting_order
