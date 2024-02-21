@@ -106,3 +106,37 @@ pub fn mean_sd_column(column: &DVector<f64>) -> (f64, f64) {
 
     (mean, sd)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use approx::assert_abs_diff_eq;
+    use nalgebra::DMatrix;
+
+    #[test]
+    fn test_log_transform() {
+        let mut values = DMatrix::from_vec(3, 2, vec![1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0]);
+        let log_scale = log_transform(
+            &mut values,
+            &["parking".to_string(), "school_dist".to_string()],
+        );
+        assert!(log_scale);
+
+        assert_eq!(
+            values.column(0).iter().cloned().collect::<Vec<f64>>(),
+            vec![0.0, 1.0, 2.0]
+        );
+        assert_eq!(
+            values.column(1).iter().cloned().collect::<Vec<f64>>(),
+            vec![3.0, 4.0, 5.0]
+        );
+    }
+
+    #[test]
+    fn test_mean_sd_dmat() {
+        let data = DMatrix::from_vec(5, 1, vec![1.0, 2.0, 3.0, 4.0, 5.0]);
+        let (mean, sd) = mean_sd_dmat(&data);
+        assert_eq!(mean, 3.);
+        assert_abs_diff_eq!(sd, 1.581138, epsilon = 1e-6);
+    }
+}
