@@ -69,7 +69,6 @@ pub fn readfile(
                         }
                         if let Some(number) = number.as_f64() {
                             if current_positions[i] < nentries {
-                                // values[[i, current_positions[i]]] = number;
                                 values[(current_positions[i], i)] = number;
                                 current_positions[i] += 1;
                             }

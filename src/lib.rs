@@ -85,6 +85,8 @@ pub fn uamutate(
 /// * `dists` - A matrix of distances between entries in `values1` and closest values in `values2`.
 /// * `groups` - A vector of same length as `dists`, with 1-based indices of group numbers. There
 /// will generally be far fewer unique groups as there are entries in `dists`.
+/// * `log_scale` - If true, distances are logged before being aggregated, with final values being
+/// 10 ^ mean (log10 (x)).
 ///
 /// # Returns
 ///
@@ -172,6 +174,8 @@ fn aggregate_to_groups(
 /// * `dists` - A vector of distances between entries in `values1` and closest values in `values2`.
 /// * `groups` - A vector of same length as `dists`, with 1-based indices of group numbers. There
 /// will generally be far fewer unique groups as there are entries in `dists`.
+/// * `log_scale` - If true, distances are logged before being aggregated, with final values being
+/// 10 ^ mean (log10 (x)).
 ///
 /// # Returns
 ///
