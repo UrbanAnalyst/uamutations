@@ -212,6 +212,7 @@ fn aggregate_to_groups_single_col(dists: &[f64], groups: &[usize], log_scale: &b
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nalgebra::DMatrix;
 
     #[test]
     fn test_uamutate() {
@@ -236,5 +237,35 @@ mod tests {
         let sums = uamutate(reader1, reader2, &varsall, nentries);
 
         assert!(!sums.is_empty());
+    }
+
+    #[test]
+    #[should_panic(expected = "dists must have two columns")]
+    fn test_aggregate_to_groups_invalid_dists_columns() {
+        let values1 = DMatrix::from_vec(1, 1, vec![1.0]);
+        let dists = DMatrix::from_vec(1, 1, vec![1.0]);
+        let groups = vec![1];
+        let log_scale = false;
+        aggregate_to_groups(&values1, &dists, &groups, &log_scale);
+    }
+
+    #[test]
+    #[should_panic(expected = "dists must have same number of rows as values1")]
+    fn test_aggregate_to_groups_mismatched_rows() {
+        let values1 = DMatrix::from_vec(1, 1, vec![1.0]);
+        let dists = DMatrix::from_vec(2, 2, vec![1.0, 2.0, 3.0, 4.0]);
+        let groups = vec![1, 2];
+        let log_scale = false;
+        aggregate_to_groups(&values1, &dists, &groups, &log_scale);
+    }
+
+    #[test]
+    #[should_panic(expected = "groups must have same length as values1")]
+    fn test_aggregate_to_groups_mismatched_groups_length() {
+        let values1 = DMatrix::from_vec(1, 1, vec![1.0]);
+        let dists = DMatrix::from_vec(1, 2, vec![1.0, 2.0]);
+        let groups = vec![1, 2];
+        let log_scale = false;
+        aggregate_to_groups(&values1, &dists, &groups, &log_scale);
     }
 }
