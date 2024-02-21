@@ -177,4 +177,11 @@ mod tests {
             "Only the first column of v1 should be different"
         );
     }
+
+    #[test]
+    #[should_panic(expected = "values1 must not be empty")]
+    fn test_mlr_beta_empty_data() {
+        let empty_data = DMatrix::<f64>::zeros(0, 0);
+        mlr_beta(&empty_data);
+    }
 }
