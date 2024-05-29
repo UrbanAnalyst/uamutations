@@ -224,7 +224,6 @@ fn aggregate_to_groups_single_col(dists: &[f64], groups: &[usize], log_scale: &b
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nalgebra::DMatrix;
 
     #[test]
     fn test_uamutate() {

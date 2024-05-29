@@ -52,7 +52,6 @@ pub fn transform_invert_values(values: &mut DMatrix<f64>, varname: &str) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nalgebra::DMatrix;
 
     #[test]
     fn test_transform_invert_values() {

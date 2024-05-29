@@ -135,7 +135,6 @@ pub fn resize_matrix(matrix: &DMatrix<f64>, new_rows: usize) -> DMatrix<f64> {
 mod tests {
     use super::*;
     use approx::assert_abs_diff_eq;
-    use nalgebra::DMatrix;
 
     #[test]
     fn test_log_transform() {
