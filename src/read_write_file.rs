@@ -43,14 +43,15 @@ const COLS_TO_STD: [&str; 1] = ["social_index"];
 
 pub fn readfile(
     reader: BufReader<File>,
-    varnames: &Vec<String>,
+    varnames: &[String],
     nentries: usize,
 ) -> (DMatrix<f64>, Vec<usize>) {
     assert!(nentries > 0, "nentries must be greater than zero");
 
     let json: Value = serde_json::from_reader(reader).unwrap();
+    let actual_nentries = json.as_array().unwrap().len().min(nentries);
 
-    let mut values = DMatrix::<f64>::zeros(nentries, varnames.len());
+    let mut values = DMatrix::<f64>::zeros(actual_nentries, varnames.len());
     let mut city_group = Vec::new();
     let city_group_col = "index";
 
@@ -68,7 +69,7 @@ pub fn readfile(
                             std_index.push(i);
                         }
                         if let Some(number) = number.as_f64() {
-                            if current_positions[i] < nentries {
+                            if current_positions[i] < actual_nentries {
                                 values[(current_positions[i], i)] = number;
                                 current_positions[i] += 1;
                             }
@@ -77,7 +78,7 @@ pub fn readfile(
                 }
                 if let Some(Value::Number(number)) = map.get(city_group_col) {
                     if let Some(number) = number.as_f64() {
-                        if city_group.len() < nentries {
+                        if city_group.len() < actual_nentries {
                             city_group.push(number as usize);
                         }
                     }
@@ -177,7 +178,7 @@ mod tests {
         let file1b = File::open(filename1).unwrap();
         let reader1b = BufReader::new(file1b);
         let result = std::panic::catch_unwind(|| {
-            readfile(reader1b, &vec!["nonexistent_var".to_string()], nentries);
+            readfile(reader1b, &["nonexistent_var".to_string()], nentries);
         });
         assert!(
             result.is_err(),

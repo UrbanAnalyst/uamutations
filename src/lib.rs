@@ -49,12 +49,20 @@ pub mod utils;
 pub fn uamutate(
     reader1: BufReader<File>,
     reader2: BufReader<File>,
-    varnames: &Vec<String>,
+    varnames: &[String],
     nentries: usize,
 ) -> DMatrix<f64> {
     // Read contents of files:
-    let (mut values1, groups1) = read_write_file::readfile(reader1, varnames, nentries);
+    let (mut values1, mut groups1) = read_write_file::readfile(reader1, varnames, nentries);
     let (mut values2, _groups2) = read_write_file::readfile(reader2, varnames, nentries);
+
+    // Resize to smallest number of rows:
+    let nentries_actual = values1.nrows().min(values2.nrows());
+    if nentries_actual < nentries {
+        values1 = utils::resize_matrix(&values1, nentries_actual);
+        values2 = utils::resize_matrix(&values2, nentries_actual);
+        groups1.truncate(nentries_actual);
+    }
 
     let log_scale = utils::log_transform(&mut values1, varnames);
     let _log_scale = utils::log_transform(&mut values2, varnames);
