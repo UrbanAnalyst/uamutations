@@ -15,12 +15,12 @@ const NENTRIES: usize = 10000;
 
 // const FNAME1: &str = "berlin.json";
 // const FNAME2: &str = "paris.json";
-const FNAME1: &str = "/data/mega/code/repos/UrbanAnalyst/CityDataPrivate/berlin/dataraw.json";
-const FNAME2: &str = "/data/mega/code/repos/UrbanAnalyst/CityDataPrivate/paris/dataraw.json";
+const FNAME1: &str = "/data/mega/code/repos/UrbanAnalyst/CityDataPrivate/utrecht/dataraw.json";
+const FNAME2: &str = "/data/mega/code/repos/UrbanAnalyst/CityDataPrivate/muenster/dataraw.json";
 // const FNAME1: &str = "./test_resources/dat1.json";
 // const FNAME2: &str = "./test_resources/dat2.json";
-// const VARNAME: &str = "bike_index";
-const VARNAME: &str = "school_dist";
+const VARNAME: &str = "bike_index";
+// const VARNAME: &str = "school_dist";
 const OUTFILENAME: &str = "output.txt";
 
 /// Entry point for the Urban Analyst mutation algorithm.

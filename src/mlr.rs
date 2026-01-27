@@ -71,11 +71,12 @@ pub fn mlr_beta(data: &DMatrix<f64>) -> Vec<f64> {
 /// # Arguments
 ///
 /// * `values1` - A 2D array where the first row is the variable to be adjusted and the remaining
-/// rows are the other variables.
+///   rows are the other variables.
 /// * `values2` - A 2D array with the same structure as `values1`, used to calculate the MLR
-/// coefficients for adjustment.
+///   coefficients for adjustment.
 ///
 /// * Example
+///
 /// let mut v1 = array![[1.0, 2.0, 3.0, 4.0, 5.0], [2.1, 3.2, 4.1, 5.2, 5.9]];
 /// let v1_orig = v1.clone();
 /// let v2 = array![[1.0, 2.0, 3.0, 4.0, 5.0], [3.1, 4.3, 5.3, 6.5, 7.3]];

@@ -51,7 +51,7 @@ pub fn log_transform(values: &mut DMatrix<f64>, varnames: &[String]) -> bool {
 /// # Arguments
 ///
 /// * `values` - An Array2 object from which mean and SD values are calcualted from the first
-/// column.
+///   column.
 ///
 /// # Panics
 ///
