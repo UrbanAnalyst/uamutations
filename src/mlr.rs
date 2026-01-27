@@ -75,11 +75,6 @@ pub fn mlr_beta(data: &DMatrix<f64>) -> Vec<f64> {
 /// * `values2` - A 2D array with the same structure as `values1`, used to calculate the MLR
 ///   coefficients for adjustment.
 ///
-/// # srr compliance statements
-///
-/// @srrstats G2.3 Another statement in MLR
-/// @srrstats G2.2 A statement in MLR
-///
 /// # Example
 ///
 /// ```
